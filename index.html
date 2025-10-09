@@ -168,7 +168,7 @@ function showAddForm(){
       abv: parseFloat(elem('a_abv').value) || null,
       price_eur: elem('a_price').value ? parseFloat(elem('a_price').value) : null,
       rating_philipp: null,
-      rating_kumpel: null,
+      rating_andreas: null,
       notes: null,
       image_url: null
     };
@@ -189,7 +189,7 @@ async function showDetail(id){
   const me = localStorage.getItem('whiskydb_user') || 'Unbekannt';
   // nur das jeweilige Rating editierbar machen
   const editablePhilipp = (me === 'Philipp');
-  const editableKumpel = (me === 'Kumpel');
+  const editableAndreas = (me === 'Andreas');
   elem('content').innerHTML = `
     <div class="card">
       <h3>${escapeHtml(w.name)}</h3>
@@ -203,9 +203,9 @@ async function showDetail(id){
           <span id="valPhil">${w.rating_philipp ?? '-'}</span>
           ${ editablePhilipp ? '<input id="inpPhil" type="number" min="0" max="100" placeholder="0-100"> <button id="savePhil">Speichern</button>' : '' }
         </div>
-        <div style="margin-top:6px"><strong>Bewertung Kumpel:</strong>
-          <span id="valKump">${w.rating_kumpel ?? '-'}</span>
-          ${ editableKumpel ? '<input id="inpKump" type="number" min="0" max="100" placeholder="0-100"> <button id="saveKump">Speichern</button>' : '' }
+        <div style="margin-top:6px"><strong>Bewertung Andreas:</strong>
+          <span id="valKump">${w.rating_andreas ?? '-'}</span>
+          ${ editableAndreas ? '<input id="inpKump" type="number" min="0" max="100" placeholder="0-100"> <button id="saveKump">Speichern</button>' : '' }
         </div>
       </div>
 
@@ -225,12 +225,12 @@ async function showDetail(id){
       elem('valPhil').textContent = v; elem('detailMsg').textContent = 'Gespeichert.';
     };
   }
-  if(editableKumpel){
+  if(editableAndreas){
     elem('saveKump').onclick = async () => {
       const v = parseInt(elem('inpKump').value);
       if(isNaN(v)){ elem('detailMsg').textContent = 'Bitte Zahl eingeben.'; return; }
       elem('detailMsg').textContent = 'Speichert…';
-      const { data, error } = await supabase.from('whiskies').update({ rating_kumpel: v }).eq('id', id).select();
+      const { data, error } = await supabase.from('whiskies').update({ rating_andreas: v }).eq('id', id).select();
       if(error){ elem('detailMsg').textContent = 'Fehler: ' + error.message; return; }
       elem('valKump').textContent = v; elem('detailMsg').textContent = 'Gespeichert.';
     };
