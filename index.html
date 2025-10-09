@@ -2,7 +2,7 @@
 <html lang="de">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WhiskyDB Zugang</title>
+<title>WhiskyDB – Zugang</title>
 
 <h1>WhiskyDB 🔐</h1>
 
@@ -16,31 +16,66 @@
 <div id="content" style="display:none">
   <h2>Willkommen, <span id="user"></span>!</h2>
   <p>Hier kommt deine eigentliche App hin.</p>
+  <button id="logout">Abmelden</button>
 </div>
 
 <script>
-const USERS = {
-  "Philipp": "Eichenfass2025!",
-  "Kumpel": "SherryCask2025!"
+/* 
+   Schritt 1 – SHA-256-Hashes erzeugen:
+   Öffne im Browser (oder in der JS-Konsole) folgendes:
+
+   const enc = new TextEncoder().encode("DEIN_PASSWORT");
+   crypto.subtle.digest("SHA-256", enc).then(buf => 
+     console.log([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join(""))
+   );
+
+   Die ausgegebene Hex-Zeichenfolge hier unten eintragen.
+*/
+
+const USERS_HASH = {
+  "Philipp": "b1946ac92492d2347c6235b4d2611184f3d2cbb6c45f2b8f9d3d9a6a9f1e6d2a", // Beispiel-Hash
+  "Kumpel":  "c5e478d59288c841aa530db6845c4c8d962893a001ce4a9b7b6a5b4f0f1f3a9c"
 };
 
-document.getElementById("enter").onclick = () => {
+// Hilfsfunktionen
+function buf2hex(buffer) {
+  return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256Hex(str) {
+  const enc = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest("SHA-256", enc);
+  return buf2hex(hash);
+}
+
+// Login-Funktion
+document.getElementById("enter").onclick = async () => {
   const pw = document.getElementById("pass").value.trim();
-  const name = Object.keys(USERS).find(u => USERS[u] === pw);
-  if (!name) {
+  const h = await sha256Hex(pw);
+  const user = Object.keys(USERS_HASH).find(u => USERS_HASH[u] === h);
+
+  if (user) {
+    localStorage.setItem("whiskydb_user", user);
+    showApp(user);
+  } else {
     document.getElementById("msg").textContent = "Falsches Passwort.";
-    return;
   }
-  localStorage.setItem("whiskydb_user", name);
+};
+
+// Logout-Funktion
+document.getElementById("logout").onclick = () => {
+  localStorage.removeItem("whiskydb_user");
+  location.reload();
+};
+
+// App anzeigen, wenn schon eingeloggt
+function showApp(name) {
   document.getElementById("lockscreen").style.display = "none";
   document.getElementById("content").style.display = "";
   document.getElementById("user").textContent = name;
-};
-
-if (localStorage.getItem("whiskydb_user")) {
-  document.getElementById("lockscreen").style.display = "none";
-  document.getElementById("content").style.display = "";
-  document.getElementById("user").textContent = localStorage.getItem("whiskydb_user");
 }
+
+const existing = localStorage.getItem("whiskydb_user");
+if (existing) showApp(existing);
 </script>
 </html>
