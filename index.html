@@ -35,7 +35,7 @@ const SUPABASE_URL = "https://svlcylawdtszcoucxjrv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- Passwort-Reset prüfen ---
+// --- Recovery: Passwort-Reset via Token ---
 const hashParams = new URLSearchParams(window.location.hash.substring(1));
 const accessToken = hashParams.get("access_token");
 const type = hashParams.get("type");
@@ -64,9 +64,9 @@ if (type === "recovery" && accessToken) {
 
 // === Hilfsfunktionen ===
 const $ = (id) => document.getElementById(id);
-const msg = (t) => { $("msg")?.textContent = t; };
+const msg = (t) => { const n = $("msg"); if (n) n.textContent = t; };
 
-// === Session prüfen ===
+// === Session-Handling ===
 async function refreshSession() {
   const { data: { session } } = await supabase.auth.getSession();
   const loggedIn = !!session;
@@ -75,16 +75,31 @@ async function refreshSession() {
   if (loggedIn) {
     $("username").textContent = session.user.email;
     showListView();
+  } else {
+    // Felder leeren
+    $("email").value = "";
+    $("password").value = "";
   }
 }
 
-// === Login / Registrierung / Logout ===
+// === Login / Registrierung ===
 $("login").onclick = async () => {
   const email = $("email").value.trim();
   const password = $("password").value.trim();
   if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  msg(error ? "Fehler: " + error.message : "");
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    // häufige Fehler sauber erklären
+    if (error.message.toLowerCase().includes("invalid login credentials")) {
+      msg("Login fehlgeschlagen: E-Mail oder Passwort falsch.");
+    } else if (error.message.toLowerCase().includes("email not confirmed") || error.message.toLowerCase().includes("confirm")) {
+      msg("E-Mail ist noch nicht bestätigt. Entweder Bestätigungsmail prüfen oder E-Mail-Bestätigung in den Auth-Einstellungen deaktivieren.");
+    } else {
+      msg("Fehler beim Login: " + error.message);
+    }
+  } else {
+    msg("");
+  }
   refreshSession();
 };
 
@@ -92,8 +107,22 @@ $("signup").onclick = async () => {
   const email = $("email").value.trim();
   const password = $("password").value.trim();
   if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
-  const { error } = await supabase.auth.signUp({ email, password });
-  msg(error ? "Fehler: " + error.message : "");
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    if (error.message.toLowerCase().includes("user already registered")) {
+      msg("Diese E-Mail ist bereits registriert. Bitte einloggen.");
+    } else {
+      msg("Fehler bei der Registrierung: " + error.message);
+    }
+  } else {
+    // Wenn "Email confirm" AUS ist, gibt es sofort eine Session.
+    // Wenn AN ist, ist data.session == null -> Hinweis geben.
+    if (!data.session) {
+      msg("Konto erstellt. Bitte E-Mail bestätigen (oder Bestätigung vorübergehend im Dashboard deaktivieren).");
+    } else {
+      msg("");
+    }
+  }
   refreshSession();
 };
 
@@ -117,7 +146,7 @@ async function showListView() {
     .order("created_at", { ascending: false });
   const list = $("whiskyList");
   if (error) list.innerHTML = "<li>Fehler: " + error.message + "</li>";
-  else list.innerHTML = data.map(w =>
+  else list.innerHTML = (data || []).map(w =>
     `<li><strong>${w.name}</strong>${w.distillery ? " – " + w.distillery : ""} | ${w.origin || ""} | ⭐ ${w.rating || "-"} | ` +
     `${w.price_eur ? w.price_eur.toFixed(2) + "€" : "-"} ${w.price_per_liter_eur ? "(" + w.price_per_liter_eur.toFixed(2) + "€/L)" : ""}</li>`
   ).join("");
@@ -145,8 +174,17 @@ function showAddForm() {
     };
     if (!row.name) return $("msg2").textContent = "Bitte Name eingeben.";
     const { error } = await supabase.from("whiskies").insert(row);
-    $("msg2").textContent = error ? "Fehler: " + error.message : "Gespeichert!";
-    if (!error) showListView();
+    if (error) {
+      // hilfreicher Hinweis bei RLS/Editors-Problem
+      if (error.message.toLowerCase().includes("row-level security")) {
+        $("msg2").textContent = "Kein Schreibrecht: Prüfe, ob deine auth.users.id in der Tabelle 'editors' steht.";
+      } else {
+        $("msg2").textContent = "Fehler: " + error.message;
+      }
+    } else {
+      $("msg2").textContent = "Gespeichert!";
+      showListView();
+    }
   };
 }
 
