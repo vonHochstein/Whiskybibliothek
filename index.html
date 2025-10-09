@@ -1,81 +1,245 @@
 <!doctype html>
 <html lang="de">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WhiskyDB – Zugang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WhiskyDB – lokal gesichert</title>
 
-<h1>WhiskyDB 🔐</h1>
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:16px}
+  input,button,textarea{font-size:1rem;padding:8px;margin:6px 0}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .card{border:1px solid #ddd;padding:10px;border-radius:6px;margin:8px 0}
+  .muted{color:#666;font-size:.9rem}
+</style>
 
+<h1>WhiskyDB (lokaler Zugang)</h1>
+
+<!-- LOCKSCREEN -->
 <div id="lockscreen">
-  <p>Bitte Passwort eingeben:</p>
+  <p>Passwort eingeben (dein Gerät merkt den Login):</p>
   <input id="pass" type="password" placeholder="Passwort">
-  <button id="enter">Betreten</button>
-  <p id="msg"></p>
+  <div class="row">
+    <button id="enter">Betreten</button>
+    <button id="clearLocal">Abmelden Gerät</button>
+  </div>
+  <p id="lockMsg" class="muted"></p>
 </div>
 
-<div id="content" style="display:none">
-  <h2>Willkommen, <span id="user"></span>!</h2>
-  <p>Hier kommt deine eigentliche App hin.</p>
-  <button id="logout">Abmelden</button>
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="row">
+    <div><strong>Angemeldet als:</strong> <span id="currentUser"></span></div>
+    <div style="margin-left:auto"><button id="logout">Logout</button></div>
+  </div>
+
+  <div class="row">
+    <button id="showList">Liste</button>
+    <button id="showAdd">Neuen Whisky</button>
+    <button id="refresh">Aktualisieren</button>
+  </div>
+
+  <div id="content"></div>
 </div>
 
-<script>
-/* 
-   Schritt 1 – SHA-256-Hashes erzeugen:
-   Öffne im Browser (oder in der JS-Konsole) folgendes:
+<script type="module">
+/* ------------------------
+   Konfiguration: hier Supabase-Daten eintragen
+   ------------------------ */
+const SUPABASE_URL = "https://dffqempnuqymcofvgkxx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA"; // <-- füge hier deinen anon key ein
 
-   const enc = new TextEncoder().encode("DEIN_PASSWORT");
-   crypto.subtle.digest("SHA-256", enc).then(buf => 
-     console.log([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join(""))
-   );
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase; // macht die Instanz in DevTools sichtbar
 
-   Die ausgegebene Hex-Zeichenfolge hier unten eintragen.
-*/
-
+/* ------------------------
+   Benutzer-Hashes (SHA-256) — ersetze die Hashes mit euren eigenen (siehe Kommentar unten)
+   ------------------------ */
 const USERS_HASH = {
   "Philipp": "bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
   "Andreas": "7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
 };
 
-// Hilfsfunktionen
-function buf2hex(buffer) {
-  return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, "0")).join("");
-}
+/* Hinweis: so erzeugst du die Hashes einmalig:
+   Im Browser-Console (oder JS-Fiddle) folgendes:
+   const enc = new TextEncoder().encode("DEIN_PASSWORT");
+   crypto.subtle.digest("SHA-256", enc).then(buf => console.log([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("")))
+*/
 
-async function sha256Hex(str) {
-  const enc = new TextEncoder().encode(str);
-  const hash = await crypto.subtle.digest("SHA-256", enc);
-  return buf2hex(hash);
-}
+/* ------------------------
+   Helfer
+   ------------------------ */
+function elem(id){return document.getElementById(id);}
+function buf2hex(buffer){return [...new Uint8Array(buffer)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function sha256Hex(str){const enc=new TextEncoder().encode(str); const h=await crypto.subtle.digest('SHA-256',enc); return buf2hex(h);}
 
-// Login-Funktion
-document.getElementById("enter").onclick = async () => {
-  const pw = document.getElementById("pass").value.trim();
+/* ------------------------
+   Lock / Login (clientseitig)
+   ------------------------ */
+elem('enter').onclick = async () => {
+  const pw = elem('pass').value.trim();
+  if(!pw){elem('lockMsg').textContent = 'Bitte Passwort eingeben.'; return;}
   const h = await sha256Hex(pw);
   const user = Object.keys(USERS_HASH).find(u => USERS_HASH[u] === h);
-
-  if (user) {
-    localStorage.setItem("whiskydb_user", user);
-    showApp(user);
-  } else {
-    document.getElementById("msg").textContent = "Falsches Passwort.";
-  }
+  if(!user){ elem('lockMsg').textContent = 'Falsches Passwort.'; return; }
+  localStorage.setItem('whiskydb_user', user);
+  elem('pass').value = '';
+  showApp(user);
 };
 
-// Logout-Funktion
-document.getElementById("logout").onclick = () => {
-  localStorage.removeItem("whiskydb_user");
-  location.reload();
+elem('clearLocal').onclick = () => {
+  localStorage.removeItem('whiskydb_user');
+  elem('lockMsg').textContent = 'Lokale Anmeldung entfernt.';
+  elem('app').style.display = 'none';
+  elem('lockscreen').style.display = '';
 };
 
-// App anzeigen, wenn schon eingeloggt
-function showApp(name) {
-  document.getElementById("lockscreen").style.display = "none";
-  document.getElementById("content").style.display = "";
-  document.getElementById("user").textContent = name;
+/* ------------------------
+   App UI-Logik
+   ------------------------ */
+function showApp(user){
+  elem('lockscreen').style.display = 'none';
+  elem('app').style.display = '';
+  elem('currentUser').textContent = user;
+  showList();
+}
+elem('logout').onclick = () => { localStorage.removeItem('whiskydb_user'); location.reload(); };
+elem('refresh').onclick = showList;
+elem('showList').onclick = showList;
+elem('showAdd').onclick = showAddForm;
+
+const existing = localStorage.getItem('whiskydb_user');
+if(existing) showApp(existing);
+
+/* ------------------------
+   Funktionen: Liste / Add / Detail / Edit rating
+   ------------------------ */
+
+async function showList(){
+  elem('content').innerHTML = '<p>Lade…</p>';
+  const { data, error } = await supabase
+    .from('whiskies')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if(error){ elem('content').innerHTML = '<p class="muted">Fehler beim Laden: '+error.message+'</p>'; return; }
+  if(!data || data.length===0){ elem('content').innerHTML = '<p class="muted">Keine Whiskys vorhanden.</p>'; return; }
+  elem('content').innerHTML = data.map(w => {
+    return `<div class="card">
+      <strong>${escapeHtml(w.name)}</strong> ${w.distillery? '– '+escapeHtml(w.distillery):'' }<br>
+      <span class="muted">${w.origin||''} ${w.age_years? '• ' + w.age_years + ' Jahre':''}</span><br>
+      <div class="row">
+        <div>Preis: ${w.price_eur ? w.price_eur.toFixed(2)+'€' : '-'}</div>
+        <div>ABV: ${w.abv||'-'}</div>
+        <div style="margin-left:auto"><button data-id="${w.id}" class="viewBtn">Ansehen</button></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Buttons binden
+  document.querySelectorAll('.viewBtn').forEach(b => b.onclick = (e) => showDetail(e.currentTarget.dataset.id));
 }
 
-const existing = localStorage.getItem("whiskydb_user");
-if (existing) showApp(existing);
+function showAddForm(){
+  elem('content').innerHTML = `
+    <div class="card">
+      <h3>Neuen Whisky anlegen</h3>
+      <input id="a_name" placeholder="Name (Pflicht)">
+      <input id="a_dist" placeholder="Brennerei">
+      <input id="a_origin" placeholder="Herkunft">
+      <input id="a_age" type="number" placeholder="Alter (Jahre)">
+      <input id="a_vol" type="number" placeholder="Volumen (ml)">
+      <input id="a_abv" type="number" step="0.1" placeholder="%Vol ABV">
+      <input id="a_price" type="number" step="0.01" placeholder="Preis (€)">
+      <div class="row">
+        <button id="saveNew">Speichern</button>
+        <button id="cancelNew">Abbrechen</button>
+      </div>
+      <p id="addMsg" class="muted"></p>
+    </div>
+  `;
+  elem('cancelNew').onclick = showList;
+  elem('saveNew').onclick = async () => {
+    const row = {
+      name: elem('a_name').value.trim(),
+      distillery: elem('a_dist').value.trim() || null,
+      origin: elem('a_origin').value.trim() || null,
+      age_years: parseInt(elem('a_age').value) || null,
+      volume_ml: parseInt(elem('a_vol').value) || null,
+      abv: parseFloat(elem('a_abv').value) || null,
+      price_eur: elem('a_price').value ? parseFloat(elem('a_price').value) : null,
+      rating_philipp: null,
+      rating_kumpel: null,
+      notes: null,
+      image_url: null
+    };
+    if(!row.name){ elem('addMsg').textContent = 'Name ist Pflicht.'; return; }
+    elem('addMsg').textContent = 'Speichert…';
+    const { data, error } = await supabase.from('whiskies').insert(row).select();
+    if(error){ elem('addMsg').textContent = 'Fehler: ' + error.message; return; }
+    elem('addMsg').textContent = 'Gespeichert!';
+    showList();
+  };
+}
+
+async function showDetail(id){
+  elem('content').innerHTML = '<p>Lade Detail…</p>';
+  const { data, error } = await supabase.from('whiskies').select('*').eq('id', id).single();
+  if(error){ elem('content').innerHTML = '<p class="muted">Fehler: '+error.message+'</p>'; return; }
+  const w = data;
+  const me = localStorage.getItem('whiskydb_user') || 'Unbekannt';
+  // nur das jeweilige Rating editierbar machen
+  const editablePhilipp = (me === 'Philipp');
+  const editableKumpel = (me === 'Kumpel');
+  elem('content').innerHTML = `
+    <div class="card">
+      <h3>${escapeHtml(w.name)}</h3>
+      <div class="muted">${escapeHtml(w.distillery||'')} ${w.origin? '• ' + escapeHtml(w.origin): ''}</div>
+      <p>Alter: ${w.age_years || '-'} Jahre • Volumen: ${w.volume_ml || '-'} ml • ABV: ${w.abv || '-'}</p>
+      <p>Preis: ${w.price_eur ? w.price_eur.toFixed(2)+'€' : '-'}</p>
+      <p>Notizen: ${w.notes ? escapeHtml(w.notes) : '-'}</p>
+
+      <div style="margin-top:10px">
+        <div><strong>Bewertung Philipp:</strong> 
+          <span id="valPhil">${w.rating_philipp ?? '-'}</span>
+          ${ editablePhilipp ? '<input id="inpPhil" type="number" min="0" max="100" placeholder="0-100"> <button id="savePhil">Speichern</button>' : '' }
+        </div>
+        <div style="margin-top:6px"><strong>Bewertung Kumpel:</strong>
+          <span id="valKump">${w.rating_kumpel ?? '-'}</span>
+          ${ editableKumpel ? '<input id="inpKump" type="number" min="0" max="100" placeholder="0-100"> <button id="saveKump">Speichern</button>' : '' }
+        </div>
+      </div>
+
+      <div style="margin-top:10px"><button id="back">Zurück</button></div>
+      <p id="detailMsg" class="muted"></p>
+    </div>
+  `;
+  elem('back').onclick = showList;
+
+  if(editablePhilipp){
+    elem('savePhil').onclick = async () => {
+      const v = parseInt(elem('inpPhil').value);
+      if(isNaN(v)){ elem('detailMsg').textContent = 'Bitte Zahl eingeben.'; return; }
+      elem('detailMsg').textContent = 'Speichert…';
+      const { data, error } = await supabase.from('whiskies').update({ rating_philipp: v }).eq('id', id).select();
+      if(error){ elem('detailMsg').textContent = 'Fehler: ' + error.message; return; }
+      elem('valPhil').textContent = v; elem('detailMsg').textContent = 'Gespeichert.';
+    };
+  }
+  if(editableKumpel){
+    elem('saveKump').onclick = async () => {
+      const v = parseInt(elem('inpKump').value);
+      if(isNaN(v)){ elem('detailMsg').textContent = 'Bitte Zahl eingeben.'; return; }
+      elem('detailMsg').textContent = 'Speichert…';
+      const { data, error } = await supabase.from('whiskies').update({ rating_kumpel: v }).eq('id', id).select();
+      if(error){ elem('detailMsg').textContent = 'Fehler: ' + error.message; return; }
+      elem('valKump').textContent = v; elem('detailMsg').textContent = 'Gespeichert.';
+    };
+  }
+}
+
+/* ------------------------
+   kleine Hilfsfunktionen
+   ------------------------ */
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
 </script>
-</html>
