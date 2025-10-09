@@ -34,6 +34,8 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = "https://svlcylawdtszcoucxjrv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase; // <-- macht Supabase global sichtbar
+
 
 // --- Recovery: Passwort-Reset via Token ---
 const hashParams = new URLSearchParams(window.location.hash.substring(1));
