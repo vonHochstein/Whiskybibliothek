@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WhiskyDB – Minimal</title>
+
+<h1>WhiskyDB – Login & Quick-Test</h1>
+
+<section id="auth">
+  <input id="email" type="email" placeholder="E-Mail" />
+  <button id="send">Login-Link senden</button>
+  <button id="logout" style="display:none">Abmelden</button>
+  <p id="msg"></p>
+</section>
+
+<section id="add" style="display:none">
+  <h2>Neuen Whisky anlegen</h2>
+  <input id="name" placeholder="Name*" />
+  <input id="distillery" placeholder="Brennerei" />
+  <input id="origin" placeholder="Herkunft" />
+  <input id="age" type="number" placeholder="Alter (Jahre)" />
+  <input id="volume" type="number" placeholder="Volumen (ml)" />
+  <input id="abv" type="number" step="0.1" placeholder="%Vol" />
+  <input id="price" type="number" step="0.01" placeholder="Preis (€)" />
+  <input id="rating" type="number" min="1" max="10" placeholder="Bewertung (1–10)" />
+  <button id="save">Speichern</button>
+</section>
+
+<section>
+  <h2>Liste</h2>
+  <ul id="list"></ul>
+</section>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+  const supabase = createClient(https://svlcylawdtszcoucxjrv.supabase.co, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI);
+
+  const $ = (id) => document.getElementById(id);
+  const msg = (t) => { $("msg").textContent = t; };
+
+  async function refreshSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const loggedIn = !!session;
+    $("logout").style.display = loggedIn ? "" : "none";
+    $("add").style.display = loggedIn ? "" : "none";
+    if (loggedIn) loadWhiskies(); else $("list").innerHTML = "";
+  }
+
+  $("send").onclick = async () => {
+    const email = $("email").value.trim();
+    if (!email) return msg("Bitte E-Mail eintragen.");
+    const { error } = await supabase.auth.signInWithOtp({ email }); // Magic Link
+    msg(error ? ("Fehler: " + error.message) : "Link gesendet – check dein Postfach.");
+  };
+
+  $("logout").onclick = async () => {
+    await supabase.auth.signOut(); msg("Abgemeldet."); refreshSession();
+  };
+
+  $("save").onclick = async () => {
+    const row = {
+      name: $("name").value.trim(),
+      distillery: $("distillery").value.trim() || null,
+      origin: $("origin").value.trim() || null,
+      age_years: Number($("age").value) || null,
+      volume_ml: Number($("volume").value) || null,
+      abv: Number($("abv").value) || null,
+      price_eur: Number($("price").value) || null,
+      rating: Number($("rating").value) || null
+    };
+    if (!row.name) return msg("Name ist Pflicht.");
+    const { error } = await supabase.from("whiskies").insert(row);
+    if (error) msg("Fehler: " + error.message);
+    else { msg("Gespeichert."); loadWhiskies(); }
+  };
+
+  async function loadWhiskies() {
+    const { data, error } = await supabase
+      .from("whiskies")
+      .select("id, name, distillery, origin, rating, price_eur, price_per_liter_eur")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) return msg("Fehler: " + error.message);
+    $("list").innerHTML = (data || []).map(w =>
+      `<li><strong>${w.name}</strong>${w.distillery ? " – " + w.distillery : ""} | ` +
+      `${w.origin || ""} | ⭐ ${w.rating || "-"} | ` +
+      `${w.price_eur ? w.price_eur.toFixed(2) + "€" : "-"} ` +
+      `${w.price_per_liter_eur ? "(" + w.price_per_liter_eur.toFixed(2) + "€/L)" : ""}</li>`
+    ).join("");
+  }
+
+  supabase.auth.onAuthStateChange(() => refreshSession());
+  refreshSession();
+</script>
+</html>
