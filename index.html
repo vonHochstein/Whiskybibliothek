@@ -2,130 +2,163 @@
 <html lang="de">
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>WhiskyDB – Login</title>
+<title>WhiskyDB</title>
 
-<h1>WhiskyDB – Login / Registrierung</h1>
+<h1>WhiskyDB</h1>
 
+<!-- LOGIN / REGISTRIERUNG -->
 <section id="auth">
   <input id="email" type="email" placeholder="E-Mail" />
   <input id="password" type="password" placeholder="Passwort" />
   <br>
   <button id="login">Login</button>
   <button id="signup">Registrieren</button>
-  <button id="logout" style="display:none">Abmelden</button>
   <p id="msg"></p>
 </section>
 
-<section id="app" style="display:none">
-  <h2>Angemeldet als <span id="user-email"></span></h2>
-  <button id="addMode">Neuen Whisky anlegen</button>
-  <ul id="list"></ul>
+<!-- DASHBOARD -->
+<section id="dashboard" style="display:none">
+  <h2>Willkommen, <span id="username"></span></h2>
+  <nav>
+    <button id="btnList">Whisky-Liste</button>
+    <button id="btnAdd">Neuer Whisky</button>
+    <button id="btnStats">Statistik</button>
+    <button id="logout">Abmelden</button>
+  </nav>
+  <div id="contentArea"></div>
 </section>
 
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  const SUPABASE_URL = "https://svlcylawdtszcoucxjrv.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI";
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://svlcylawdtszcoucxjrv.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // --- Prüfen, ob Recovery-Link aufgerufen wurde ---
-  const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  const accessToken = hashParams.get("access_token");
-  const type = hashParams.get("type");
-  
-  if (type === "recovery" && accessToken) {
-    document.body.innerHTML = `
-      <h2>Neues Passwort festlegen</h2>
-      <input id="newPass" type="password" placeholder="Neues Passwort" />
-      <button id="setPass">Speichern</button>
-      <p id="msg"></p>
-    `;
-  
-    const msg = (t) => document.getElementById("msg").textContent = t;
-  
-    document.getElementById("setPass").onclick = async () => {
-      const newPassword = document.getElementById("newPass").value.trim();
-      if (!newPassword) return msg("Bitte neues Passwort eingeben.");
-  
-      // Session anhand des Tokens initialisieren
-      const { error: sessErr } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: accessToken
-      });
-      if (sessErr) return msg("Fehler beim Authentifizieren: " + sessErr.message);
-  
-      // Passwort aktualisieren
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) return msg("Fehler: " + error.message);
-  
-      msg("Passwort erfolgreich geändert. Du kannst dich jetzt neu einloggen.");
-    };
-  
-    // hier stoppen, damit die normale App nicht weiterlädt
-    throw new Error("Stop further execution after password reset screen");
-  }
-
-  const $ = (id) => document.getElementById(id);
-  const msg = (t) => { $("msg").textContent = t; };
-
-  async function refreshSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    const loggedIn = !!session;
-    $("logout").style.display = loggedIn ? "" : "none";
-    $("app").style.display = loggedIn ? "" : "none";
-    $("login").style.display = loggedIn ? "none" : "";
-    $("signup").style.display = loggedIn ? "none" : "";
-    if (loggedIn) {
-      $("user-email").textContent = session.user.email;
-      loadWhiskies();
-    } else {
-      $("user-email").textContent = "";
-      $("list").innerHTML = "";
-    }
-  }
-
-  $("login").onclick = async () => {
-    const email = $("email").value.trim();
-    const password = $("password").value.trim();
-    if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) msg("Fehler: " + error.message);
-    else msg("Erfolgreich eingeloggt.");
-    refreshSession();
-  };
-
-  $("signup").onclick = async () => {
-    const email = $("email").value.trim();
-    const password = $("password").value.trim();
-    if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
-    const { error } = await supabase.auth.signUp({ email, password });
-    msg(error ? ("Fehler: " + error.message) : "Konto angelegt. Du bist eingeloggt.");
-    refreshSession();
-  };
-
-  $("logout").onclick = async () => {
-    await supabase.auth.signOut();
-    msg("Abgemeldet.");
-    refreshSession();
-  };
-
-  async function loadWhiskies() {
-    const { data, error } = await supabase
-      .from("whiskies")
-      .select("id, name, distillery, origin, rating, price_eur, price_per_liter_eur")
-      .order("created_at", { ascending: false })
-      .limit(50);
+// --- Passwort-Reset prüfen ---
+const hashParams = new URLSearchParams(window.location.hash.substring(1));
+const accessToken = hashParams.get("access_token");
+const type = hashParams.get("type");
+if (type === "recovery" && accessToken) {
+  document.body.innerHTML = `
+    <h2>Neues Passwort festlegen</h2>
+    <input id="newPass" type="password" placeholder="Neues Passwort" />
+    <button id="setPass">Speichern</button>
+    <p id="msg"></p>
+  `;
+  const msg = (t) => document.getElementById("msg").textContent = t;
+  document.getElementById("setPass").onclick = async () => {
+    const newPassword = document.getElementById("newPass").value.trim();
+    if (!newPassword) return msg("Bitte neues Passwort eingeben.");
+    const { error: sessErr } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: accessToken
+    });
+    if (sessErr) return msg("Fehler beim Authentifizieren: " + sessErr.message);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) return msg("Fehler: " + error.message);
-    $("list").innerHTML = (data || []).map(w =>
-      `<li><strong>${w.name}</strong> ${w.distillery ? "– " + w.distillery : ""} | ` +
-      `${w.origin || ""} | ⭐ ${w.rating || "-"} | ` +
-      `${w.price_eur ? w.price_eur.toFixed(2) + "€" : "-"} ` +
-      `${w.price_per_liter_eur ? "(" + w.price_per_liter_eur.toFixed(2) + "€/L)" : ""}</li>`
-    ).join("");
-  }
+    msg("Passwort geändert. Du kannst dich jetzt neu einloggen.");
+  };
+  throw new Error("Stop after password reset");
+}
 
-  supabase.auth.onAuthStateChange(() => refreshSession());
+// === Hilfsfunktionen ===
+const $ = (id) => document.getElementById(id);
+const msg = (t) => { $("msg")?.textContent = t; };
+
+// === Session prüfen ===
+async function refreshSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const loggedIn = !!session;
+  $("auth").style.display = loggedIn ? "none" : "";
+  $("dashboard").style.display = loggedIn ? "" : "none";
+  if (loggedIn) {
+    $("username").textContent = session.user.email;
+    showListView();
+  }
+}
+
+// === Login / Registrierung / Logout ===
+$("login").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value.trim();
+  if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  msg(error ? "Fehler: " + error.message : "");
   refreshSession();
+};
+
+$("signup").onclick = async () => {
+  const email = $("email").value.trim();
+  const password = $("password").value.trim();
+  if (!email || !password) return msg("Bitte E-Mail und Passwort eingeben.");
+  const { error } = await supabase.auth.signUp({ email, password });
+  msg(error ? "Fehler: " + error.message : "");
+  refreshSession();
+};
+
+$("logout").onclick = async () => {
+  await supabase.auth.signOut();
+  msg("Abgemeldet.");
+  refreshSession();
+};
+
+// === Navigation ===
+$("btnList").onclick = showListView;
+$("btnAdd").onclick = showAddForm;
+$("btnStats").onclick = showStats;
+
+// === Ansicht: Whisky-Liste ===
+async function showListView() {
+  $("contentArea").innerHTML = "<h3>Whisky-Liste</h3><ul id='whiskyList'>Lade Daten…</ul>";
+  const { data, error } = await supabase
+    .from("whiskies")
+    .select("id,name,distillery,origin,rating,price_eur,price_per_liter_eur")
+    .order("created_at", { ascending: false });
+  const list = $("whiskyList");
+  if (error) list.innerHTML = "<li>Fehler: " + error.message + "</li>";
+  else list.innerHTML = data.map(w =>
+    `<li><strong>${w.name}</strong>${w.distillery ? " – " + w.distillery : ""} | ${w.origin || ""} | ⭐ ${w.rating || "-"} | ` +
+    `${w.price_eur ? w.price_eur.toFixed(2) + "€" : "-"} ${w.price_per_liter_eur ? "(" + w.price_per_liter_eur.toFixed(2) + "€/L)" : ""}</li>`
+  ).join("");
+}
+
+// === Ansicht: Neuer Whisky ===
+function showAddForm() {
+  $("contentArea").innerHTML = `
+    <h3>Neuen Whisky anlegen</h3>
+    <input id="wName" placeholder="Name">
+    <input id="wDist" placeholder="Brennerei">
+    <input id="wOrigin" placeholder="Herkunft">
+    <input id="wPrice" type="number" step="0.01" placeholder="Preis (€)">
+    <input id="wRating" type="number" min="1" max="10" placeholder="Bewertung (1–10)">
+    <button id="saveNew">Speichern</button>
+    <p id="msg2"></p>
+  `;
+  $("saveNew").onclick = async () => {
+    const row = {
+      name: $("wName").value.trim(),
+      distillery: $("wDist").value.trim() || null,
+      origin: $("wOrigin").value.trim() || null,
+      price_eur: Number($("wPrice").value) || null,
+      rating: Number($("wRating").value) || null
+    };
+    if (!row.name) return $("msg2").textContent = "Bitte Name eingeben.";
+    const { error } = await supabase.from("whiskies").insert(row);
+    $("msg2").textContent = error ? "Fehler: " + error.message : "Gespeichert!";
+    if (!error) showListView();
+  };
+}
+
+// === Ansicht: Statistik (Demo) ===
+function showStats() {
+  $("contentArea").innerHTML = `
+    <h3>Statistik (Beispiel)</h3>
+    <p>Hier könnten später Durchschnittsbewertung, teuerster Whisky usw. angezeigt werden.</p>
+  `;
+}
+
+supabase.auth.onAuthStateChange(() => refreshSession());
+refreshSession();
 </script>
 </html>
