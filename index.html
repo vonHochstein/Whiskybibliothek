@@ -127,9 +127,15 @@ $("signup").onclick = async () => {
 };
 
 $("logout").onclick = async () => {
-  await supabase.auth.signOut();
-  msg("Abgemeldet.");
-  refreshSession();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    msg("Fehler beim Abmelden: " + error.message);
+  } else {
+    msg("Abgemeldet.");
+    // Session lokal löschen und Seite neu laden
+    localStorage.removeItem("supabase.auth.token");
+    location.reload();
+  }
 };
 
 // === Navigation ===
