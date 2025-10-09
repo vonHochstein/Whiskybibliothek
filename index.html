@@ -29,6 +29,43 @@
   const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
   const supabase = createClient(https://svlcylawdtszcoucxjrv.supabase.co, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bGN5bGF3ZHRzemNvdWN4anJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzM0MjcsImV4cCI6MjA3NTU0OTQyN30.odTM2YKHDOJ0HD18mphNjEvbaGACKgWvoUJqalAAbgI);
 
+  // --- Prüfen, ob Recovery-Link aufgerufen wurde ---
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const accessToken = hashParams.get("access_token");
+  const type = hashParams.get("type");
+  
+  if (type === "recovery" && accessToken) {
+    document.body.innerHTML = `
+      <h2>Neues Passwort festlegen</h2>
+      <input id="newPass" type="password" placeholder="Neues Passwort" />
+      <button id="setPass">Speichern</button>
+      <p id="msg"></p>
+    `;
+  
+    const msg = (t) => document.getElementById("msg").textContent = t;
+  
+    document.getElementById("setPass").onclick = async () => {
+      const newPassword = document.getElementById("newPass").value.trim();
+      if (!newPassword) return msg("Bitte neues Passwort eingeben.");
+  
+      // Session anhand des Tokens initialisieren
+      const { error: sessErr } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: accessToken
+      });
+      if (sessErr) return msg("Fehler beim Authentifizieren: " + sessErr.message);
+  
+      // Passwort aktualisieren
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) return msg("Fehler: " + error.message);
+  
+      msg("Passwort erfolgreich geändert. Du kannst dich jetzt neu einloggen.");
+    };
+  
+    // hier stoppen, damit die normale App nicht weiterlädt
+    throw new Error("Stop further execution after password reset screen");
+  }
+
   const $ = (id) => document.getElementById(id);
   const msg = (t) => { $("msg").textContent = t; };
 
