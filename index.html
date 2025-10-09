@@ -171,6 +171,7 @@ function showAddForm() {
     <p id="msg2"></p>
   `;
   $("saveNew").onclick = async () => {
+    console.log("Speichern-Button wurde geklickt");
     const row = {
       name: $("wName").value.trim(),
       distillery: $("wDist").value.trim() || null,
