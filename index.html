@@ -1,1 +1,398 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Whiskybibliothek</title>
 
+<style>
+  body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:20px;background:#fafafa;color:#222}
+  h1,h2,h3{margin:.4em 0}
+  input,textarea,button{font-size:1rem;padding:6px;margin:4px 0}
+  .row{display:flex;flex-wrap:wrap;gap:8px}
+  .card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .muted{color:#666;font-size:.9rem}
+
+  /* Number-Spinner ausblenden */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  @media (max-width:768px){.two-col{grid-template-columns:1fr;}}
+  .field{margin-bottom:6px}
+  img.thumb{width:100%;max-width:220px;border-radius:6px;object-fit:cover}
+</style>
+
+<h1>Whiskybibliothek</h1>
+<p>v10.10.individual-stock</p>
+
+<!-- LOGIN -->
+<div id="lockscreen">
+  <p>Bitte Passwort eingeben:</p>
+  <input id="pass" type="password" placeholder="Passwort">
+  <button id="enter">Betreten</button>
+  <p id="msg"></p>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <div>Angemeldet als <strong id="user"></strong></div>
+    <button id="logout">Abmelden</button>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button id="showList">Liste</button>
+    <button id="showAdd">Neuer Whisky</button>
+    <button id="refresh">Aktualisieren</button>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script type="module">
+/* ---------- Konfiguration ---------- */
+const SUPABASE_URL = "https://dffqempnuqymcofvgkxx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
+
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase;
+
+const USERS_HASH = {
+  "Philipp": "bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
+  "Andreas": "7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
+};
+
+/* ---------- Login ---------- */
+function buf2hex(b){return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+async function sha256Hex(t){return buf2hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))}
+document.getElementById("enter").onclick=async()=>{
+  const pw=document.getElementById("pass").value.trim();
+  const h=await sha256Hex(pw);
+  const user=Object.keys(USERS_HASH).find(u=>USERS_HASH[u]===h);
+  if(!user){document.getElementById("msg").textContent="Falsches Passwort.";return;}
+  localStorage.setItem("whiskydb_user",user);
+  showApp(user);
+};
+document.getElementById("logout").onclick=()=>{localStorage.removeItem("whiskydb_user");location.reload();}
+const me=localStorage.getItem("whiskydb_user");if(me)showApp(me);
+
+function showApp(name){
+  document.getElementById("lockscreen").style.display="none";
+  document.getElementById("app").style.display="";
+  document.getElementById("user").textContent=name;
+  showList();
+}
+
+/* ---------- Liste ---------- */
+document.getElementById("refresh").onclick=showList;
+document.getElementById("showList").onclick=showList;
+document.getElementById("showAdd").onclick=showAddForm;
+
+async function showList(){
+  document.getElementById("content").innerHTML="<p>Lade Liste …</p>";
+  const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
+  if(error){document.getElementById("content").textContent=error.message;return;}
+  if(!data||!data.length){document.getElementById("content").innerHTML="<p class='muted'>Keine Einträge.</p>";return;}
+  document.getElementById("content").innerHTML=data.map(w=>`
+    <div class="card">
+      <div class="row">
+        <div style="flex:0 0 120px"><img src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
+        <div style="flex:1">
+          <strong>${w.name}</strong> ${w.distillery?"– "+w.distillery:""}<br>
+          <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
+          <span>${w.volume_ml||'-'} ml | ${w.abv||'-'} % vol</span><br>
+          <span>Preis: ${w.price_eur? w.price_eur.toFixed(2)+' €':''} (${w.price_per_liter_eur? w.price_per_liter_eur.toFixed(2)+' €/L':''})</span><br>
+          <button data-id="${w.id}" class="viewBtn">Ansehen</button>
+        </div>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll(".viewBtn").forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
+}
+
+/* ---------- Neuer Whisky ---------- */
+function showAddForm(){
+  document.getElementById("content").innerHTML=`
+  <div class="card">
+  <h3>Neuer Whisky</h3>
+  <div class="field"><input id="name" placeholder="Name (Whisky)"></div>
+  <div class="field"><input id="dist" placeholder="Brennerei"></div>
+  <div class="field"><input id="orig" placeholder="Herkunft (Land/Region)"></div>
+  <div class="field"><input id="age" type="number" placeholder="Alter (Jahre)"></div>
+  <div class="field"><input id="vol" type="number" placeholder="Volumen (ml)"></div>
+  <div class="field"><input id="price" type="number" step="0.01" placeholder="Preis (€)"></div>
+  <div class="field"><input id="abv" type="number" step="0.1" placeholder="% vol"></div>
+  <!-- Kein allgemeines stock_percent mehr -->
+  <button id="save">Speichern</button>
+  <p id="addMsg" class="muted"></p>
+  </div>`;
+  document.getElementById("save").onclick=async()=>{
+    const row={
+      name:val("name"),distillery:val("dist"),origin:val("orig"),
+      age_years:num("age"),volume_ml:num("vol"),
+      price_eur:num("price"),abv:num("abv")
+      // kein stock_percent hier
+    };
+    if(!row.name){msg("addMsg","Name ist Pflicht.");return;}
+    msg("addMsg","Speichert …");
+    const {error}=await supabase.from("whiskies").insert(row);
+    msg("addMsg",error?error.message:"Gespeichert!");if(!error)showList();
+  };
+}
+function val(id){return document.getElementById(id).value.trim();}
+function num(id){const v=parseFloat(val(id));return isNaN(v)?null:v;}
+function msg(id,t){document.getElementById(id).textContent=t;}
+
+/* ---------- Detailanzeige ---------- */
+async function showDetail(id) {
+  document.getElementById("content").innerHTML = "<p>Lade …</p>";
+  const { data, error } = await supabase.from("whiskies").select("*").eq("id", id).single();
+  if (error) {document.getElementById("content").textContent = error.message;return;}
+  const w = data;
+  const user = localStorage.getItem("whiskydb_user");
+  renderDetailView(w, id, user, false);
+
+  async function renderDetailView(w, id, user, editing) {
+    const canEdit = editing;
+
+    document.getElementById("content").innerHTML = `
+      <div class="card">
+        <div class="row">
+          <div style="flex:0 0 150px">
+            <img src="${w.image_url || "https://via.placeholder.com/150x200?text=No+Image"}" class="thumb" id="imgPrev">
+          </div>
+          <div style="flex:1">
+            ${canEdit
+              ? `<input id="name" value="${w.name || ""}" placeholder="Whisky"><br>
+                 <input id="distillery" value="${w.distillery || ""}" placeholder="Brennerei"><br>
+                 <input id="origin" value="${w.origin || ""}" placeholder="Herkunft"><br>
+                 <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
+                 <input id="volume_ml" type="number" value="${w.volume_ml || ""}" placeholder="Volumen (ml)"><br>
+                 <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
+                 <input id="abv" type="number" step="0.1" value="${w.abv || ""}" placeholder="% vol."><br>
+                 <p><strong>Bild ändern:</strong></p>
+                 <input type="file" id="imgUpload" accept="image/*">
+                 <p id="imgMsg" class="muted"></p>`
+              : `<h3>${escapeHtml(w.name)}</h3>
+                 <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
+                 <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
+                 <p>Preis: ${w.price_eur ? w.price_eur.toFixed(2) + " €" : "-"} (${w.price_per_liter_eur ? w.price_per_liter_eur.toFixed(2) + " €/L" : "-"})</p>`}
+          </div>
+        </div>
+
+        <!-- Zwei Karten für Philipp / Andreas -->
+        <div class="two-col">
+          <div class="card">
+            <h4>Philipp</h4>
+            ${renderUserBlock("philipp", user, w, canEdit, "Philipp")}
+          </div>
+          <div class="card">
+            <h4>Andreas</h4>
+            ${renderUserBlock("andreas", user, w, canEdit, "Andreas")}
+          </div>
+        </div>
+
+        <div style="margin-top:10px">
+          ${canEdit
+            ? `<button id="save">Speichern</button> <button id="cancel">Abbrechen</button>`
+            : `<button id="edit" ${user ? "" : "style='display:none'"}>Bearbeiten</button>`}
+          <button id="back">Zurück</button>
+        </div>
+        <p id="detailMsg" class="muted"></p>
+      </div>`;
+
+    document.getElementById("back").onclick = showList;
+    if (!canEdit && (user==="Philipp" || user==="Andreas")) {
+      document.getElementById("edit").onclick = () => renderDetailView(w, id, user, true);
+    }
+    if (canEdit) {
+      document.getElementById("cancel").onclick = () => renderDetailView(w, id, user, false);
+      document.getElementById("save").onclick = async () => {
+        const updateData = collectUpdates(w, user, /*editing=*/true);
+        document.getElementById("detailMsg").textContent = "Speichert …";
+        const { error } = await supabase.from("whiskies").update(updateData).eq("id", id);
+        if (error) document.getElementById("detailMsg").textContent = "Fehler: " + error.message;
+        else {
+          const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+          renderDetailView(fresh, id, user, false);
+        }
+      };
+
+      /* ---------- Bild-Upload + Bild löschen ---------- */
+      const imgInput = document.getElementById("imgUpload");
+      const imgMsg = document.getElementById("imgMsg");
+
+      // Bild löschen (nur im Edit-Modus sichtbar)
+      const imgDeleteBtn = document.createElement("button");
+      imgDeleteBtn.textContent = "Bild löschen";
+      imgDeleteBtn.style.marginTop = "6px";
+      imgDeleteBtn.style.background = "#b91c1c";
+      imgDeleteBtn.style.color = "white";
+      imgDeleteBtn.style.border = "none";
+      imgDeleteBtn.style.padding = "6px 10px";
+      imgDeleteBtn.style.borderRadius = "4px";
+      imgDeleteBtn.onclick = async () => {
+        const currentUrl = w.image_url;
+        if (!currentUrl) { imgMsg.textContent = "Kein Bild vorhanden."; return; }
+        imgMsg.textContent = "Lösche Bild …";
+        const path = currentUrl.split("/").pop();
+        await supabase.storage.from("whiskies").remove([path]);
+        await supabase.from("whiskies").update({ image_url: null }).eq("id", id);
+        const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+        renderDetailView(fresh, id, user, true);
+      };
+      imgInput?.insertAdjacentElement("afterend", imgDeleteBtn);
+
+      if (imgInput) {
+        imgInput.onchange = async () => {
+          const file = imgInput.files[0];
+          if (!file) return;
+          imgMsg.textContent = "Lade Bild hoch …";
+
+          // altes Bild (Storage + DB) entfernen
+          if (w.image_url) {
+            const oldPath = w.image_url.split("/").pop();
+            await supabase.storage.from("whiskies").remove([oldPath]);
+            await supabase.from("whiskies").update({ image_url: null }).eq("id", id);
+          }
+
+          // neues hochladen
+          const fileName = `whisky_${id}_${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from("whiskies").upload(fileName, file, { contentType:file.type, upsert:true });
+          if (uploadError) { imgMsg.textContent = "Fehler: " + uploadError.message; return; }
+
+          const { data: publicURL } = supabase.storage.from("whiskies").getPublicUrl(fileName);
+          await supabase.from("whiskies").update({ image_url: publicURL.publicUrl }).eq("id", id);
+          const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+          renderDetailView(fresh, id, user, true);
+          imgMsg.textContent = "Bild erfolgreich hochgeladen.";
+        };
+      }
+
+      /* ---------- Whisky löschen (mit Passwort) ---------- */
+      if (user === "Philipp" || user === "Andreas") {
+        const delSection = document.createElement("div");
+        delSection.style.marginTop = "15px";
+        delSection.style.borderTop = "1px solid #ddd";
+        delSection.style.paddingTop = "10px";
+        delSection.innerHTML = `
+          <button id="deleteBtn" style="background:#b91c1c;color:white;padding:6px 10px;border:none;border-radius:4px">Whisky löschen</button>
+          <div id="deleteConfirm" style="display:none;margin-top:8px">
+            <p style="margin:4px 0">Zur Bestätigung Passwort eingeben:</p>
+            <input id="deletePass" type="password" placeholder="Passwort">
+            <button id="confirmDel">Löschen bestätigen</button>
+            <button id="cancelDel">Abbrechen</button>
+            <p id="delMsg" class="muted"></p>
+          </div>`;
+        document.querySelector(".card:last-child").appendChild(delSection);
+        const wDeleteBtn = delSection.querySelector("#deleteBtn");
+        const confirmDiv = delSection.querySelector("#deleteConfirm");
+        const confirmBtn = delSection.querySelector("#confirmDel");
+        const cancelBtn = delSection.querySelector("#cancelDel");
+        const delMsg = delSection.querySelector("#delMsg");
+        wDeleteBtn.onclick = () => confirmDiv.style.display = "block";
+        cancelBtn.onclick = () => confirmDiv.style.display = "none";
+        confirmBtn.onclick = async () => {
+          const pass = confirmDiv.querySelector("#deletePass").value.trim();
+          const hash = await sha256Hex(pass);
+          if (USERS_HASH[user] !== hash) { delMsg.textContent = "Falsches Passwort."; return; }
+          delMsg.textContent = "Lösche Eintrag …";
+          if (w.image_url) {
+            const path = w.image_url.split("/").pop();
+            await supabase.storage.from("whiskies").remove([path]);
+          }
+          await supabase.from("whiskies").delete().eq("id", id);
+          delMsg.textContent = "Whisky gelöscht.";
+          setTimeout(showList, 1200);
+        };
+      }
+    }
+  }
+
+  /**
+   * Render-Logik je Karte:
+   * - user: aktuell eingeloggter Name ("Philipp" / "Andreas")
+   * - ownerName: "Philipp" / "Andreas" für die Karte
+   * - Regel: Philipp darf beide Karten editieren; Andreas nur seine eigene
+   */
+  function renderUserBlock(prefix, user, w, editing, ownerName){
+    const rating = w[`rating_${prefix}`];
+    const notes  = w[`notes_${prefix}`];
+    const wish   = w[`wishlist_${prefix}`];
+    const stock  = w[`stock_${prefix}`];
+
+    // Darf diese Karte editiert werden?
+    const canEditThisCard = editing && (user === "Philipp" || user === ownerName);
+
+    if (!canEditThisCard) {
+      return `
+        <p>Bewertung: ${rating ?? "-"}</p>
+        <p>Notizen:<br>${notes ? escapeHtml(notes) : "-"}</p>
+        <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>
+        <p>Bestand: ${stock ?? "-"} %</p>
+      `;
+    } else {
+      return `
+        <p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}"></p>
+        <p>Notizen:<br><textarea id="${prefix}_notes" rows="3">${notes ?? ""}</textarea></p>
+        <p><label><input id="${prefix}_wishlist" type="checkbox" ${wish ? "checked" : ""}> Kaufwunsch</label></p>
+        <p>Bestand: <input id="${prefix}_stock" type="number" step="0.1" value="${stock ?? ""}"> %</p>
+      `;
+    }
+  }
+
+  /**
+   * collectUpdates:
+   * - Allgemeine Felder
+   * - Individual-Felder:
+   *   - Wenn Philipp editiert: schreibt sowohl Philipp- als auch Andreas-Block (falls vorhanden)
+   *   - Wenn Andreas editiert: nur seinen eigenen Block
+   */
+  function collectUpdates(w, user, editing){
+    const upd = {};
+    ["name","distillery","origin","age_years","volume_ml","price_eur","abv"].forEach(f=>{
+      const el=document.getElementById(f);
+      if(el) upd[f] = el.value === "" ? null : (isNaN(el.value)? el.value : parseFloat(el.value));
+    });
+
+    // Helper zum Auslesen einer Karte, wenn Inputs existieren
+    const readCard = (who) => ({
+      rating : numVal(`${who}_rating`),
+      notes  : textVal(`${who}_notes`),
+      wish   : boolVal(`${who}_wishlist`),
+      stock  : numVal(`${who}_stock`)
+    });
+
+    if (user === "Philipp") {
+      // Philipp darf beide Karten schreiben
+      const p = readCard("philipp");
+      const a = readCard("andreas");
+      if (p.rating !== undefined)  upd.rating_philipp = p.rating;
+      if (p.notes  !== undefined)  upd.notes_philipp  = p.notes;
+      if (p.wish   !== undefined)  upd.wishlist_philipp = p.wish;
+      if (p.stock  !== undefined)  upd.stock_philipp  = p.stock;
+
+      if (a.rating !== undefined)  upd.rating_andreas = a.rating;
+      if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
+      if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
+      if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+    } else if (user === "Andreas") {
+      // Andreas nur seinen
+      const a = readCard("andreas");
+      if (a.rating !== undefined)  upd.rating_andreas = a.rating;
+      if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
+      if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
+      if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+    }
+
+    return upd;
+  }
+
+  /* Utils */
+  function numVal(id){const e=document.getElementById(id);return e? (e.value===""?null:(parseFloat(e.value)||null)) : undefined;}
+  function textVal(id){const e=document.getElementById(id);return e? (e.value.trim()===""?null:e.value.trim()) : undefined;}
+  function boolVal(id){const e=document.getElementById(id);return e? !!e.checked : undefined;}
+  function escapeHtml(s){return s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';}
+}
+</script>
+</html>
