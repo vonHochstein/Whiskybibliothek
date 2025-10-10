@@ -18,6 +18,6 @@ Ideen
   - Favoritenliste
   - Preis/Leistungsindex
   - Exportfunktion (pdf/ csv)
-- Kompofortfunktionen
+- Kompfortfunktionen
   - farbliche Hinterlegung bei geringem Bestand
 
