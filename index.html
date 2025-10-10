@@ -4,9 +4,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Whiskybibliothek</title>
 
-<link href="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet"/>
-<script src="https://unpkg.com/cropperjs@1.6.2/dist/cropper.min.js"></script>
-
 <style>
   body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:20px;background:#fafafa;color:#222}
   h1,h2,h3{margin:.4em 0}
@@ -14,14 +11,28 @@
   .row{display:flex;flex-wrap:wrap;gap:8px}
   .card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   .muted{color:#666;font-size:.9rem}
+  
+  /* Entfernt die Pfeile aus number-Feldern (Chrome, Safari, Edge, Opera) */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Entfernt Pfeile in Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+  
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  @media (max-width:768px){.two-col{grid-template-columns:1fr;}}
   .field{margin-bottom:6px}
   .readonly{background:#f4f4f4}
   img.thumb{width:100%;max-width:220px;border-radius:6px;object-fit:cover}
 </style>
 
 <h1>Whiskybibliothek</h1>
-<p>v10.10.16.34</p>
+<p>v10.10.19.06</p>
 
 <!-- LOGIN -->
 <div id="lockscreen">
@@ -48,7 +59,7 @@
 <script type="module">
 /* ---------- Konfiguration ---------- */
 const SUPABASE_URL = "https://dffqempnuqymcofvgkxx.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA"; // <-- füge hier deinen anon key ein
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
 
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -114,16 +125,11 @@ function showAddForm(){
   <div class="field"><input id="name" placeholder="Name (Whisky)"></div>
   <div class="field"><input id="dist" placeholder="Brennerei"></div>
   <div class="field"><input id="orig" placeholder="Herkunft (Land/Region)"></div>
-  <div class="row">
-    <input id="age" type="number" placeholder="Alter (Jahre)">
-    <input id="vol" type="number" placeholder="Volumen (ml)">
-  </div>
-  <div class="row">
-    <input id="price" type="number" step="0.01" placeholder="Preis (€)">
-    <input id="abv" type="number" step="0.1" placeholder="% vol">
-    <input id="stock" type="number" step="0.1" placeholder="Bestand (%)">
-  </div>
-  <div class="field"><input id="img" placeholder="Bild-URL (optional)"></div>
+  <div class="field"><input id="age" type="number" placeholder="Alter (Jahre)"></div>
+  <div class="field"><input id="vol" type="number" placeholder="Volumen (ml)"></div>
+  <div class="field"><input id="price" type="number" step="0.01" placeholder="Preis (€)"></div>
+  <div class="field"><input id="abv" type="number" step="0.1" placeholder="% vol"></div>
+  <div class="field"><input id="stock" type="number" step="0.1" placeholder="Bestand (%)"></div>
   <button id="save">Speichern</button>
   <p id="addMsg" class="muted"></p>
   </div>`;
@@ -131,8 +137,7 @@ function showAddForm(){
     const row={
       name:val("name"),distillery:val("dist"),origin:val("orig"),
       age_years:num("age"),volume_ml:num("vol"),
-      price_eur:num("price"),abv:num("abv"),stock_percent:num("stock"),
-      image_url:val("img")||null
+      price_eur:num("price"),abv:num("abv"),stock_percent:num("stock")
     };
     if(!row.name){msg("addMsg","Name ist Pflicht.");return;}
     msg("addMsg","Speichert …");
@@ -144,30 +149,20 @@ function val(id){return document.getElementById(id).value.trim();}
 function num(id){const v=parseFloat(val(id));return isNaN(v)?null:v;}
 function msg(id,t){document.getElementById(id).textContent=t;}
 
-/* ---------- Detailanzeige mit Bild-Upload ---------- */
+/* ---------- Detailanzeige ---------- */
 async function showDetail(id) {
   document.getElementById("content").innerHTML = "<p>Lade …</p>";
   const { data, error } = await supabase.from("whiskies").select("*").eq("id", id).single();
-  if (error) {
-    document.getElementById("content").textContent = error.message;
-    return;
-  }
+  if (error) {document.getElementById("content").textContent = error.message;return;}
   const w = data;
   const user = localStorage.getItem("whiskydb_user");
-  const isPhil = user === "Philipp";
-  const isAnd = user === "Andreas";
-
   renderDetailView(w, id, user, false);
 
-  function renderDetailView(w, id, user, editing) {
+  async function renderDetailView(w, id, user, editing) {
     const canEdit = editing;
-    const isPhil = user === "Philipp";
-    const isAnd = user === "Andreas";
 
     document.getElementById("content").innerHTML = `
       <div class="card">
-
-        <!-- 🔹 ALLGEMEINER TEIL -->
         <div class="row">
           <div style="flex:0 0 150px">
             <img src="${w.image_url || "https://via.placeholder.com/150x200?text=No+Image"}" class="thumb" id="imgPrev">
@@ -182,16 +177,10 @@ async function showDetail(id) {
                  <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
                  <input id="abv" type="number" step="0.1" value="${w.abv || ""}" placeholder="% vol."><br>
                  <input id="stock_percent" type="number" step="0.1" value="${w.stock_percent || ""}" placeholder="Bestand (%)"><br>
-
-                 <!-- Bildauswahl & Upload -->
                  <p><strong>Bild ändern:</strong></p>
                  <input type="file" id="imgUpload" accept="image/*">
-                 <canvas id="previewCanvas" style="max-width:100%;display:none;border:1px solid #ccc;"></canvas><br>
-                 <button id="cropSave" style="display:none">Zuschneiden & Hochladen</button>
-                 <p id="imgMsg" class="muted"></p>
-                 <input id="image_url" value="${w.image_url || ""}" placeholder="Bild-URL (automatisch)">`
-              : `
-                 <h3>${escapeHtml(w.name)}</h3>
+                 <p id="imgMsg" class="muted"></p>`
+              : `<h3>${escapeHtml(w.name)}</h3>
                  <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
                  <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
                  <p>Preis: ${w.price_eur ? w.price_eur.toFixed(2) + " €" : "-"} (${w.price_per_liter_eur ? w.price_per_liter_eur.toFixed(2) + " €/L" : "-"})</p>
@@ -199,14 +188,15 @@ async function showDetail(id) {
           </div>
         </div>
 
+        <!-- Zwei Karten für Philipp / Andreas -->
         <div class="two-col">
           <div class="card">
             <h4>Philipp</h4>
-            ${renderUserBlock("philipp", isPhil, w, canEdit && isPhil)}
+            ${renderUserBlock("philipp", user==="Philipp", w, canEdit && user==="Philipp")}
           </div>
           <div class="card">
             <h4>Andreas</h4>
-            ${renderUserBlock("andreas", isAnd, w, canEdit && isAnd)}
+            ${renderUserBlock("andreas", user==="Andreas", w, canEdit && user==="Andreas")}
           </div>
         </div>
 
@@ -217,198 +207,155 @@ async function showDetail(id) {
           <button id="back">Zurück</button>
         </div>
         <p id="detailMsg" class="muted"></p>
-
-        ${(user === "Philipp" || user === "Andreas")
-          ? `<div style="margin-top:15px;border-top:1px solid #ddd;padding-top:10px">
-               <button id="deleteBtn" style="background:#b91c1c;color:white;padding:6px 10px;border:none;border-radius:4px">
-                 Whisky löschen
-               </button>
-               <div id="deleteConfirm" style="display:none;margin-top:8px">
-                 <p style="margin:4px 0">Zur Bestätigung Passwort eingeben:</p>
-                 <input id="deletePass" type="password" placeholder="Passwort">
-                 <button id="confirmDel">Löschen bestätigen</button>
-                 <button id="cancelDel">Abbrechen</button>
-                 <p id="delMsg" class="muted"></p>
-               </div>
-             </div>` 
-          : ""}
       </div>`;
 
-    /* ---------- BEARBEITEN-BLOCK (Bild-Upload-Logik) ---------- */
     document.getElementById("back").onclick = showList;
-    if (!canEdit && (isPhil || isAnd)) {
-      const btn = document.getElementById("edit");
-      btn.onclick = () => renderDetailView(w, id, user, true);
+    if (!canEdit && (user==="Philipp" || user==="Andreas")) {
+      document.getElementById("edit").onclick = () => renderDetailView(w, id, user, true);
     }
     if (canEdit) {
-      // Standard-Buttons
       document.getElementById("cancel").onclick = () => renderDetailView(w, id, user, false);
       document.getElementById("save").onclick = async () => {
         const updateData = collectUpdates(w, user);
         document.getElementById("detailMsg").textContent = "Speichert …";
         const { error } = await supabase.from("whiskies").update(updateData).eq("id", id);
-        if (error) {
-          document.getElementById("detailMsg").textContent = "Fehler: " + error.message;
-        } else {
-          document.getElementById("detailMsg").textContent = "Gespeichert.";
+        if (error) document.getElementById("detailMsg").textContent = "Fehler: " + error.message;
+        else {
           const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
           renderDetailView(fresh, id, user, false);
         }
       };
 
-		// 📸 Bild-Upload-Logik – Version 2: ganze Flasche, Weißrand
-		let cropper = null;
-		const imgInput = document.getElementById("imgUpload");
-		const canvas = document.getElementById("previewCanvas");
-		const cropBtn = document.getElementById("cropSave");
+      /* ---------- Bild-Upload + Bild löschen ---------- */
+      const imgInput = document.getElementById("imgUpload");
+      const imgMsg = document.getElementById("imgMsg");
 
-		if (imgInput) {
-		  imgInput.onchange = () => {
-			const file = imgInput.files[0];
-			if (!file) return;
-			const reader = new FileReader();
-			reader.onload = e => {
-			  const img = new Image();
-			  img.onload = () => {
-				canvas.style.display = "";
-				const ctx = canvas.getContext("2d");
-				canvas.width = img.width;
-				canvas.height = img.height;
-				ctx.drawImage(img, 0, 0);
-				if (cropper) cropper.destroy();
+      // Bild löschen (nur im Edit-Modus sichtbar)
+      const imgDeleteBtn = document.createElement("button");
+      imgDeleteBtn.textContent = "Bild löschen";
+      imgDeleteBtn.style.marginTop = "6px";
+      imgDeleteBtn.style.background = "#b91c1c";
+      imgDeleteBtn.style.color = "white";
+      imgDeleteBtn.style.border = "none";
+      imgDeleteBtn.style.padding = "6px 10px";
+      imgDeleteBtn.style.borderRadius = "4px";
+      imgDeleteBtn.onclick = async () => {
+        const currentUrl = w.image_url;
+        if (!currentUrl) { imgMsg.textContent = "Kein Bild vorhanden."; return; }
+        imgMsg.textContent = "Lösche Bild …";
+        const path = currentUrl.split("/").pop();
+        await supabase.storage.from("whiskies").remove([path]);
+        await supabase.from("whiskies").update({ image_url: null }).eq("id", id);
+        const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+        renderDetailView(fresh, id, user, true);
+      };
+      imgInput?.insertAdjacentElement("afterend", imgDeleteBtn);
 
-				// 🔹 Kein festes Seitenverhältnis mehr
-				cropper = new Cropper(canvas, {
-				  aspectRatio: NaN,
-				  viewMode: 1,
-				  background: false,
-				  movable: true,
-				  zoomable: true
-				});
-				cropBtn.style.display = "";
-			  };
-			  img.src = e.target.result;
-			};
-			reader.readAsDataURL(file);
-		  };
+      if (imgInput) {
+        imgInput.onchange = async () => {
+          const file = imgInput.files[0];
+          if (!file) return;
+          imgMsg.textContent = "Lade Bild hoch …";
 
-		  // 🔹 Export mit Weißrand und fixer Höhe (800px)
-		  cropBtn.onclick = async () => {
-			if (!cropper) return;
-			document.getElementById("imgMsg").textContent = "Verarbeite Bild …";
+          // altes Bild (Storage + DB) entfernen
+          if (w.image_url) {
+            const oldPath = w.image_url.split("/").pop();
+            await supabase.storage.from("whiskies").remove([oldPath]);
+            await supabase.from("whiskies").update({ image_url: null }).eq("id", id);
+          }
 
-			const croppedCanvas = cropper.getCroppedCanvas();
-			const scale = 800 / croppedCanvas.height;
-			const targetW = Math.round(croppedCanvas.width * scale);
-			const targetH = 800;
+          // neues hochladen
+          const fileName = `whisky_${id}_${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage
+            .from("whiskies").upload(fileName, file, { contentType:file.type, upsert:true });
+          if (uploadError) { imgMsg.textContent = "Fehler: " + uploadError.message; return; }
 
-			// Neues Canvas mit Weißhintergrund
-			const finalCanvas = document.createElement("canvas");
-			finalCanvas.width = targetW;
-			finalCanvas.height = targetH;
-			const ctx = finalCanvas.getContext("2d");
-			ctx.fillStyle = "#fff";
-			ctx.fillRect(0, 0, targetW, targetH);
+          const { data: publicURL } = supabase.storage.from("whiskies").getPublicUrl(fileName);
+          await supabase.from("whiskies").update({ image_url: publicURL.publicUrl }).eq("id", id);
+          const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+          renderDetailView(fresh, id, user, true);
+          imgMsg.textContent = "Bild erfolgreich hochgeladen.";
+        };
+      }
 
-			// Bild mittig einfügen
-			const offsetX = (targetW - croppedCanvas.width * scale) / 2;
-			const offsetY = (targetH - croppedCanvas.height * scale) / 2;
-			ctx.drawImage(
-			  croppedCanvas,
-			  offsetX,
-			  offsetY,
-			  croppedCanvas.width * scale,
-			  croppedCanvas.height * scale
-			);
-
-			// JPEG erzeugen und hochladen
-			const blob = await new Promise(res =>
-			  finalCanvas.toBlob(res, "image/jpeg", 0.85)
-			);
-			const fileName = `whisky_${id}_${Date.now()}.jpg`;
-			const { error } = await supabase.storage
-			  .from("whiskies")
-			  .upload(fileName, blob, {
-				contentType: "image/jpeg",
-				upsert: true
-			  });
-			if (error)
-			  return (document.getElementById("imgMsg").textContent =
-				"Fehler: " + error.message);
-
-			const { data: publicURL } = supabase.storage
-			  .from("whiskies")
-			  .getPublicUrl(fileName);
-
-			// 🔹 URL speichern & Vorschau aktualisieren
-			document.getElementById("image_url").value = publicURL.publicUrl;
-			document.getElementById("imgPrev").src = publicURL.publicUrl;
-			document.getElementById("imgMsg").textContent = "Bild erfolgreich hochgeladen.";
-
-			cropper.destroy();
-			cropper = null;
-			canvas.style.display = "none";
-			cropBtn.style.display = "none";
-		  };
-		}
-
+      /* ---------- Whisky löschen (mit Passwort) ---------- */
+      if (user === "Philipp" || user === "Andreas") {
+        const delSection = document.createElement("div");
+        delSection.style.marginTop = "15px";
+        delSection.style.borderTop = "1px solid #ddd";
+        delSection.style.paddingTop = "10px";
+        delSection.innerHTML = `
+          <button id="deleteBtn" style="background:#b91c1c;color:white;padding:6px 10px;border:none;border-radius:4px">Whisky löschen</button>
+          <div id="deleteConfirm" style="display:none;margin-top:8px">
+            <p style="margin:4px 0">Zur Bestätigung Passwort eingeben:</p>
+            <input id="deletePass" type="password" placeholder="Passwort">
+            <button id="confirmDel">Löschen bestätigen</button>
+            <button id="cancelDel">Abbrechen</button>
+            <p id="delMsg" class="muted"></p>
+          </div>`;
+        document.querySelector(".card:last-child").appendChild(delSection);
+        const wDeleteBtn = delSection.querySelector("#deleteBtn");
+        const confirmDiv = delSection.querySelector("#deleteConfirm");
+        const confirmBtn = delSection.querySelector("#confirmDel");
+        const cancelBtn = delSection.querySelector("#cancelDel");
+        const delMsg = delSection.querySelector("#delMsg");
+        wDeleteBtn.onclick = () => confirmDiv.style.display = "block";
+        cancelBtn.onclick = () => confirmDiv.style.display = "none";
+        confirmBtn.onclick = async () => {
+          const pass = confirmDiv.querySelector("#deletePass").value.trim();
+          const hash = await sha256Hex(pass);
+          if (USERS_HASH[user] !== hash) { delMsg.textContent = "Falsches Passwort."; return; }
+          delMsg.textContent = "Lösche Eintrag …";
+          if (w.image_url) {
+            const path = w.image_url.split("/").pop();
+            await supabase.storage.from("whiskies").remove([path]);
+          }
+          await supabase.from("whiskies").delete().eq("id", id);
+          delMsg.textContent = "Whisky gelöscht.";
+          setTimeout(showList, 1200);
+        };
+      }
     }
   }
 
-  /* ---------- Hilfsfunktionen ---------- */
-  function renderUserBlock(prefix, isOwner, w, editing) {
+  function renderUserBlock(prefix, isOwner, w, editing){
     const rating = w[`rating_${prefix}`];
     const notes = w[`notes_${prefix}`];
     const wish = w[`wishlist_${prefix}`];
-    if (!editing)
+    if (!editing) {
       return `<p>Bewertung: ${rating ?? "-"}</p>
               <p>Notizen:<br>${notes ? escapeHtml(notes) : "-"}</p>
               <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>`;
-    else
+    } else {
       return `<p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}"></p>
               <p>Notizen:<br><textarea id="${prefix}_notes" rows="3">${notes ?? ""}</textarea></p>
               <p><label><input id="${prefix}_wishlist" type="checkbox" ${wish ? "checked" : ""}> Kaufwunsch</label></p>`;
+    }
   }
 
   function collectUpdates(w, user) {
-    const isPhil = user === "Philipp";
-    const isAnd = user === "Andreas";
     const upd = {};
-    ["name","distillery","origin","age_years","volume_ml","price_eur","abv","stock_percent","image_url"].forEach(f=>{
+    ["name","distillery","origin","age_years","volume_ml","price_eur","abv","stock_percent"].forEach(f=>{
       const el=document.getElementById(f);
       if(el) upd[f] = el.value === "" ? null : (isNaN(el.value)? el.value : parseFloat(el.value));
     });
-    if (isPhil) {
+    if (user === "Philipp") {
       upd.rating_philipp = numVal("philipp_rating");
       upd.notes_philipp = textVal("philipp_notes");
       upd.wishlist_philipp = boolVal("philipp_wishlist");
     }
-    if (isAnd) {
+    if (user === "Andreas") {
       upd.rating_andreas = numVal("andreas_rating");
       upd.notes_andreas = textVal("andreas_notes");
       upd.wishlist_andreas = boolVal("andreas_wishlist");
     }
     return upd;
   }
+  function numVal(id){const e=document.getElementById(id);return e? (parseFloat(e.value)||null) : null;}
+  function textVal(id){const e=document.getElementById(id);return e? (e.value.trim()||null) : null;}
+  function boolVal(id){const e=document.getElementById(id);return e? !!e.checked : null;}
 
-  function numVal(id){const e=document.getElementById(id);return e?parseFloat(e.value)||null:null;}
-  function textVal(id){const e=document.getElementById(id);return e?e.value.trim()||null:null;}
-  function boolVal(id){const e=document.getElementById(id);return e?e.checked:null;}
   function escapeHtml(s){return s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';}
 }
-
-
-function inputOrVal(edit,id,val){return edit?`<input id="${id}" type="number" min="1" max="10" value="${val??''}">`:`<span>${val??'-'}</span>`}
-function areaOrText(edit,id,val){return edit?`<textarea id="${id}" rows="3">${val??''}</textarea>`:`<span>${val?escapeHtml(val):'-'}</span>`}
-function checkOrIcon(edit,id,val){return edit?`<input id="${id}" type="checkbox" ${val?'checked':''}>`:(val?'☑':'☐')}
-function bindUpdate(el,field,id,isBool=false){
-  const e=document.getElementById(el);if(!e)return;
-  e.onchange=async()=>{
-    const value=isBool?e.checked:(e.value.trim()||null);
-    const {error}=await supabase.from("whiskies").update({[field]:value}).eq("id",id);
-    document.getElementById("detailMsg").textContent=error?error.message:"Gespeichert";
-  };
-}
-function escapeHtml(s){return s?String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])):'';}
 </script>
 </html>
