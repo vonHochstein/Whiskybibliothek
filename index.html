@@ -361,7 +361,7 @@ function renderList(list){
             <div>${renderStars(p)} (${p ?? '-'}/10)</div>
           
             <div>⌀</div>
-            <div>${renderStars(avg)} (${avg ? avg.toFixed(1)+'/10' : '-'})</div>
+            <div>${renderStars(avg)} (${avg ? (Number.isInteger(avg) ? avg : avg.toFixed(1))+'/10' : '-'})</div>
           </div>
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
