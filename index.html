@@ -536,7 +536,9 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
   } else {
     return `
       <p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}"></p>
-      <p>Notizen:<br><textarea id="${prefix}_notes" rows="3">${notes ?? ""}</textarea></p>
+      <p>Notizen:<br>
+        <textarea id="${prefix}_notes" rows="4" style="width:100%;min-height:80px;resize:vertical;">${notes ?? ""}</textarea>
+      </p>
       <p><label><input id="${prefix}_wishlist" type="checkbox" ${wish ? "checked" : ""}> Kaufwunsch</label></p>
       <p>Bestand: <input id="${prefix}_stock" type="number" step="0.1" value="${stock ?? ""}"> %</p>
     `;
