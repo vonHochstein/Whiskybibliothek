@@ -11,12 +11,9 @@
   .row{display:flex;flex-wrap:wrap;gap:8px}
   .card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   .muted{color:#666;font-size:.9rem}
-
-  /* Number-Spinner ausblenden */
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]{-moz-appearance:textfield}
-
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   @media (max-width:768px){.two-col{grid-template-columns:1fr;}}
   .field{margin-bottom:6px}
@@ -36,6 +33,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>11.10.2025 11:05 Uhr:</strong> Globale Textsuche über alle Datenbank-Felder hinzugefügt.</li>
     <li><strong>11.10.2025 09:48 Uhr:</strong> Änderungsverzeichnis hinzugefügt.</li>
     <li><strong>11.10.2025 01:20 Uhr:</strong> Beginn der Übertragung persönlicher Bewertungen aus der alten Liste.</li>
     <li><strong>10.10.2025 23:20 Uhr:</strong> Datenbankschema aktualisiert (<code>ALTER TABLE public.whiskies</code>); neue Bestandsfelder angelegt.</li>
@@ -62,30 +60,34 @@
     <div>Angemeldet als <strong id="user"></strong></div>
     <button id="logout">Abmelden</button>
   </div>
+
   <div class="row" style="margin-top:10px">
     <button id="showList">Liste</button>
     <button id="showAdd">Neuer Whisky</button>
     <button id="refresh">Aktualisieren</button>
   </div>
+
+  <input id="searchInput" type="text" placeholder="Suchen …"
+         style="width:100%;padding:8px;margin-top:10px;font-size:1rem">
+
   <div id="content"></div>
 </div>
 
 <script type="module">
 /* ---------- Konfiguration ---------- */
-const SUPABASE_URL = "https://dffqempnuqymcofvgkxx.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
+const SUPABASE_URL="https://dffqempnuqymcofvgkxx.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+window.supabase=supabase;
 
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-window.supabase = supabase;
-
-const USERS_HASH = {
-  "Philipp": "bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
-  "Andreas": "7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
+const USERS_HASH={
+  "Philipp":"bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
+  "Andreas":"7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
 };
 
 /* ---------- Login ---------- */
-function buf2hex(b){return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function buf2hex(b){return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function sha256Hex(t){return buf2hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))}
 document.getElementById("enter").onclick=async()=>{
   const pw=document.getElementById("pass").value.trim();
@@ -115,8 +117,17 @@ async function showList(){
   document.getElementById("content").innerHTML="<p>Lade Liste …</p>";
   const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
   if(error){document.getElementById("content").textContent=error.message;return;}
-  if(!data||!data.length){document.getElementById("content").innerHTML="<p class='muted'>Keine Einträge.</p>";return;}
-  document.getElementById("content").innerHTML=data.map(w=>`
+  window.allWhiskies=data||[];
+  renderList(window.allWhiskies);
+}
+
+/* ---------- renderList ---------- */
+function renderList(list){
+  if(!list||!list.length){
+    document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
+    return;
+  }
+  document.getElementById("content").innerHTML=list.map(w=>`
     <div class="card">
       <div class="row">
         <div style="flex:0 0 120px"><img src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
@@ -130,6 +141,18 @@ async function showList(){
       </div>
     </div>`).join('');
   document.querySelectorAll(".viewBtn").forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
+}
+
+/* ---------- Textfilter ---------- */
+document.getElementById("searchInput").oninput=(e)=>{
+  const q=e.target.value.toLowerCase();
+  if(!window.allWhiskies)return;
+  const filtered=window.allWhiskies.filter(w=>
+    Object.values(w).some(val=>
+      val&&val.toString().toLowerCase().includes(q)
+    )
+  );
+  renderList(filtered);
 }
 
 /* ---------- Neuer Whisky ---------- */
