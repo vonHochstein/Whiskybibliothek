@@ -55,6 +55,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>11.10.2025 21:04 Uhr:</strong> Sicherheitsabfrage vor Bildlöschung hinzugefügt, um versehentliches Entfernen zu verhindern.</li>
     <li><strong>11.10.2025 20:52 Uhr:</strong> Notizfelder vergrößert und automatische Höhenanpassung beim Tippen hinzugefügt (komfortableres Schreiben auf mobilen Geräten).</li>
     <li><strong>11.10.2025 19:55 Uhr:</strong> Dunkelmodus, Sortierfunktion (Bewertung/Erstell-/Änderungsdatum/Name) und Metafelder (Erstellt/Geändert + Benutzer) implementiert.</li>
     <li><strong>11.10.2025 18:45 Uhr:</strong> Lazy-Loading für Bilder aktiviert – Bilder werden erst beim Scrollen geladen, um Datenvolumen zu sparen.</li>
@@ -414,15 +415,25 @@ function renderDetailView(w, id, user, editing) {
       imgDeleteBtn.style.padding = "6px 10px";
       imgDeleteBtn.style.borderRadius = "4px";
       imgDeleteBtn.onclick = async () => {
+        if (!confirm("Bist du sicher, dass du das aktuelle Bild löschen möchtest?")) return;
+      
         const currentUrl = w.image_url;
         if (!currentUrl) { imgMsg.textContent = "Kein Bild vorhanden."; return; }
+      
         imgMsg.textContent = "Lösche Bild …";
         const path = currentUrl.split("/").pop();
+      
         await supabase.storage.from("whiskies").remove([path]).catch(()=>{});
-        await supabase.from("whiskies").update({ image_url: null, updated_by:user, updated_at:new Date().toISOString() }).eq("id", id);
+        await supabase.from("whiskies").update({
+          image_url: null,
+          updated_by: user,
+          updated_at: new Date().toISOString()
+        }).eq("id", id);
+      
         const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
         renderDetailView(fresh, id, user, true);
       };
+
       imgInput?.insertAdjacentElement("afterend", imgDeleteBtn);
     }
 
