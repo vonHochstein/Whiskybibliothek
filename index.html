@@ -325,7 +325,16 @@ function applySort(list){
 
 /* ---------- Sterne-Helfer ---------- */
 function renderStars(value, readonly = true){
-  if (value == null || isNaN(value)) return '<span class="muted">-</span>';
+  if (value == null || isNaN(value)) {
+   if (readonly) return '<span class="muted">-</span>';
+   // Edit-Modus: leere Sterne anzeigen
+   const totalStars = 10;
+   let html = '<span class="stars">';
+   for (let i = 1; i <= totalStars; i++) {
+     html += '<span class="star" data-val="' + i + '"></span>';
+   }
+   return html + '</span>';
+  }
 
   // 5 Sterne (Anzeige) → halbe Schritte; 10 Sterne (Edit) → 1 Punkt pro Stern
   const starsHalf = Math.round((value / 2) * 2) / 2; // z.B. 7 → 3.5
