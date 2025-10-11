@@ -30,6 +30,16 @@
   @media (max-width:768px){.two-col{grid-template-columns:1fr;}}
   .field{margin-bottom:6px}
   img.thumb{width:100%;max-width:220px;border-radius:6px;object-fit:cover}
+
+  @media (max-width: 600px) {
+  .search-sort {
+    grid-template-columns: 1fr !important;
+  }
+  .search-sort select {
+    width: 100%;
+  }
+}
+
 </style>
 
 <h1>Whiskybibliothek</h1>
@@ -93,7 +103,7 @@
   <!-- Zähler + Suche + Sortierung -->
   <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
 
-  <div class="card" style="margin:8px 0; display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center">
+  <div class="card search-sort" style="margin:8px 0; display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center">
     <input id="searchInput" type="text" placeholder="Suchen …"
            style="display:block;width:100%;max-width:calc(100% - 2px);box-sizing:border-box;
                   padding:8px 10px;border:1px solid var(--border);border-radius:8px;
