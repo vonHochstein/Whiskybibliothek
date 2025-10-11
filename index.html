@@ -347,10 +347,21 @@ function renderList(list){
           <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
           <span>${w.volume_ml??'-'} ml | ${w.abv??'-'} % vol</span><br>
           <span>Preis: ${w.price_eur!=null? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur!=null? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
-          <div style="margin-top:4px">
-            <div>A=${a??'-'} ${renderStars(a)}</div>
-            <div>P=${p??'-'} ${renderStars(p)}</div>
-            <div>⌀${avg?avg.toFixed(1):'-'}/10 ${renderStars(avg)}</div>
+          <div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
+            <div style="font-size:0.85em; line-height:1;">
+              <span style="vertical-align:super; font-size:0.75em;">A</span>
+              <span style="vertical-align:sub; font-size:0.75em;">J</span>
+            </div>
+            <div>${renderStars(a)} (${a ?? '-'}/10)</div>
+          
+            <div style="font-size:0.85em; line-height:1;">
+              <span style="vertical-align:super; font-size:0.75em;">P</span>
+              <span style="vertical-align:sub; font-size:0.75em;">H</span>
+            </div>
+            <div>${renderStars(p)} (${p ?? '-'}/10)</div>
+          
+            <div>⌀</div>
+            <div>${renderStars(avg)} (${avg ? avg.toFixed(1)+'/10' : '-'})</div>
           </div>
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
