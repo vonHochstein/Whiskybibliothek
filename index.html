@@ -34,6 +34,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>11.10.2025 18:45 Uhr:</strong> Lazy-Loading für Bilder aktiviert – Bilder werden erst beim Scrollen geladen, um Datenvolumen zu sparen.</li>
     <li><strong>11.10.2025 18:12 Uhr:</strong> Formular für neuen Whisky vereinheitlicht – gleiche Karteikarte wie beim Bearbeiten; sofort editierbar inkl. Bild-Upload.</li>
     <li><strong>11.10.2025 10:52 Uhr:</strong> Anzeige der aktuellen Whisky-Gesamtzahl in der Bibliothek hinzugefügt.</li>
     <li><strong>11.10.2025 10:38 Uhr:</strong> Globale Textsuche über alle Datenbank-Felder hinzugefügt.</li>
@@ -139,7 +140,7 @@ function renderList(list){
   document.getElementById("content").innerHTML=list.map(w=>`
     <div class="card">
       <div class="row">
-        <div style="flex:0 0 120px"><img src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
+        <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
         <div style="flex:1">
           <strong>${w.name||''}</strong> ${w.distillery?("– "+w.distillery):""}<br>
           <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
