@@ -40,6 +40,18 @@
   }
 }
 
+  /* Sterne-Bewertung (halbe Sterne) */
+  .stars{display:inline-block;font-size:1.05rem;line-height:1;color:#d4af37;vertical-align:middle}
+  .star{cursor:pointer;display:inline-block;width:1.1em;position:relative}
+  .star::before{content:'\2605';opacity:0.32}
+  .star.full::before{opacity:1}
+  .star.half::before{
+    background:linear-gradient(90deg,#d4af37 50%,transparent 50%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    opacity:1
+  }
+  .stars.readonly .star{cursor:default}
 </style>
 
 <h1>Whiskybibliothek</h1>
@@ -55,6 +67,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>11.10.2025 22:48 Uhr:</strong> Sternebewertung (1–10 Punkte → 5 Sterne â 0,5-Schritte) implementiert. Anzeige in Karteikarten und Listenansicht.</li>
     <li><strong>11.10.2025 21:04 Uhr:</strong> Sicherheitsabfrage vor Bildlöschung hinzugefügt, um versehentliches Entfernen zu verhindern.</li>
     <li><strong>11.10.2025 20:52 Uhr:</strong> Notizfelder vergrößert und automatische Höhenanpassung beim Tippen hinzugefügt (komfortableres Schreiben auf mobilen Geräten).</li>
     <li><strong>11.10.2025 19:55 Uhr:</strong> Dunkelmodus, Sortierfunktion (Bewertung/Erstell-/Änderungsdatum/Name) und Metafelder (Erstellt/Geändert + Benutzer) implementiert.</li>
@@ -243,6 +256,42 @@ function applySort(list){
   return arr;
 }
 
+/* ---------- Sterne-Helfer ---------- */
+function renderStars(value, readonly=true){
+  if(value==null || isNaN(value)) return '<span class="muted">-</span>';
+  const stars = Math.round((value/2)*2)/2; // auf halbe Schritte runden
+  let html = '<span class="stars' + (readonly?' readonly':'') + '">';
+  const totalStars = readonly ? 5 : 10;
+  for(let i=1; i<=totalStars; i++){
+    if(stars>=i) html += '<span class="star full" data-val="'+(i*2)+'"></span>';
+    else if(stars+0.5===i) html += '<span class="star half" data-val="'+(i*2-1)+'"></span>';
+    else html += '<span class="star" data-val="'+(i*2)+'"></span>';
+  }
+  return html + '</span>';
+}
+function updateStars(prefix,val){
+  const stars=document.querySelectorAll('#'+prefix+'_stars .star');
+  if(!stars.length) return;
+  const starsVal=Math.round((val/2)*2)/2;
+  stars.forEach(st=>{
+    const i=parseInt(st.dataset.val,10)/2;
+    st.classList.remove('full','half');
+    if(starsVal>=i) st.classList.add('full');
+    else if(starsVal+0.5===i) st.classList.add('half');
+  });
+}
+function attachStarControls(prefix){
+  const stars=document.querySelectorAll('#'+prefix+'_stars .star');
+  const input=document.getElementById(prefix+'_rating');
+  stars.forEach(s=>{
+    s.addEventListener('click',()=>{
+      input.value = s.dataset.val;
+      updateStars(prefix, parseFloat(s.dataset.val));
+    });
+  });
+  input?.addEventListener('input',()=>updateStars(prefix, parseFloat(input.value)));
+}
+
 /* ---------- renderList ---------- */
 function renderList(list){
   document.getElementById("whiskyCount").textContent = `${list.length} Whiskys angezeigt`;
@@ -250,7 +299,11 @@ function renderList(list){
     document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
     return;
   }
-  document.getElementById("content").innerHTML=list.map(w=>`
+  document.getElementById("content").innerHTML=list.map(w=>{
+    const a = w.rating_andreas;
+    const p = w.rating_philipp;
+    const avg = ratingAvg(w);
+    return `
     <div class="card">
       <div class="row">
         <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
@@ -259,10 +312,15 @@ function renderList(list){
           <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
           <span>${w.volume_ml??'-'} ml | ${w.abv??'-'} % vol</span><br>
           <span>Preis: ${w.price_eur!=null? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur!=null? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
+          <span>
+            A=${a??'-'} ${renderStars(a)} / 
+            P=${p??'-'} ${renderStars(p)} / 
+            ⌀${avg?avg.toFixed(1):'-'}/10 ${renderStars(avg)}
+          </span><br>
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`}).join('');
   document.querySelectorAll(".viewBtn").forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
 }
 
@@ -540,14 +598,17 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 
   if (!canEditThisCard) {
     return `
-      <p>Bewertung: ${rating ?? "-"}</p>
+      <p>Bewertung: ${rating ?? "-"} ${renderStars(rating)}</p>
       <p>Notizen:<br>${notes ? escapeHtml(notes) : "-"}</p>
       <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>
       <p>Bestand: ${stock ?? "-"} %</p>
     `;
   } else {
+    // Sterne erst nach Einfügen ins DOM koppeln
+    setTimeout(()=>attachStarControls(prefix), 0);
     return `
-      <p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}"></p>
+      <p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}">
+      <span id="${prefix}_stars">${renderStars(rating,false)}</span></p>
       <p>Notizen:<br>
       <textarea id="${prefix}_notes" rows="4"
         style="width:calc(100% - 14px);min-height:80px;resize:vertical;overflow:hidden;
