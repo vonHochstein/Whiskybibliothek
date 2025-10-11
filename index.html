@@ -34,6 +34,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>11.10.2025 10:52 Uhr:</strong> Anzeige der aktuellen Whisky-Gesamtzahl in der Bibliothek hinzugefügt.</li>
     <li><strong>11.10.2025 10:38 Uhr:</strong> Globale live Textsuche über alle Datenbank-Felder hinzugefügt.</li>
     <li><strong>11.10.2025 09:48 Uhr:</strong> Änderungsverzeichnis hinzugefügt.</li>
     <li><strong>11.10.2025 01:20 Uhr:</strong> Beginn der Übertragung persönlicher Bewertungen aus der alten Liste.</li>
@@ -67,6 +68,9 @@
     <button id="showAdd">Neuer Whisky</button>
     <button id="refresh">Aktualisieren</button>
   </div>
+
+  <!-- Anzahl Datenbankeinträge -->
+  <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
 
   <!-- Suchfeld -->
   <input id="searchInput" type="text" placeholder="Suchen …"
@@ -121,11 +125,15 @@ async function showList(){
   const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
   if(error){document.getElementById("content").textContent=error.message;return;}
   window.allWhiskies = data || [];
+  document.getElementById("whiskyCount").textContent = 
+  `${window.allWhiskies.length} Whiskys in der Bibliothek`;
   renderList(window.allWhiskies);
 }
 
 /* ---------- renderList (wird von showList und vom Filter genutzt) ---------- */
 function renderList(list){
+  document.getElementById("whiskyCount").textContent = 
+  `${list.length} Whiskys angezeigt`;
   if(!list || !list.length){
     document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
     return;
