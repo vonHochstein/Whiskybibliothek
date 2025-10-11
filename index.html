@@ -103,7 +103,19 @@ body.dark .card.personal {
   background: linear-gradient(180deg, rgba(185,135,40,0.2) 0%, rgba(255,255,255,0.05) 100%);
   border: 1px solid #444;
 }
-  
+
+h1 {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.03em;
+  color: #b17828;
+  background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  margin-bottom: 0.4em;
+}
+
 </style>
 
 <h1>Whiskybibliothek</h1>
@@ -498,7 +510,6 @@ function renderDetailView(w, id, user, editing) {
         ${editing
           ? `<button id="save">Speichern</button> <button id="cancel">Abbrechen</button>`
           : `<button id="edit" ${user ? "" : "style='display:none'"}>Bearbeiten</button>`}
-        ${id != null ? `<button id="back">Zurück</button>` : ""}
       </div>
       <p id="detailMsg" class="muted"></p>
     </div>`;
