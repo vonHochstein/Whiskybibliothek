@@ -24,7 +24,16 @@
 </style>
 
 <h1>Whiskybibliothek</h1>
-<p>letzte Änderung: 11.10.25 00:02</p>
+
+<div id="changelog" class="card" style="margin-bottom:20px">
+  <h3>Änderungsverzeichnis</h3>
+  <ul>
+    <li><strong>11.10.2025 01:20:</strong>Beginn Übertrag persönliche Beweertungen</li>
+    <li><strong>10.10.2025 23:00:</strong>Individuelle Bestände hinzugefügt</li>
+    <li><strong>10.10.2025 19:00:</strong>Karteikarten angelegt</li>
+    <li><strong>...</strong>...</li>
+  </ul>
+</div>
 
 <!-- LOGIN -->
 <div id="lockscreen">
@@ -76,6 +85,7 @@ document.getElementById("logout").onclick=()=>{localStorage.removeItem("whiskydb
 const me=localStorage.getItem("whiskydb_user");if(me)showApp(me);
 
 function showApp(name){
+  document.getElementById("changelog").style.display="none";
   document.getElementById("lockscreen").style.display="none";
   document.getElementById("app").style.display="";
   document.getElementById("user").textContent=name;
