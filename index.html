@@ -483,6 +483,7 @@ function renderDetailView(w, id, user, editing) {
         <div style="flex:1">
           ${editing
             ? `<input id="name" value="${w.name || ""}" placeholder="Whisky"><br>
+               <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>
                <input id="distillery" value="${w.distillery || ""}" placeholder="Brennerei"><br>
                <input id="origin" value="${w.origin || ""}" placeholder="Herkunft"><br>
                <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
@@ -498,8 +499,6 @@ function renderDetailView(w, id, user, editing) {
                <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>`}
         </div>
       </div>
-
-      <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>
 
       <!-- Zwei Karten für Philipp / Andreas -->
       <div class="two-col">
