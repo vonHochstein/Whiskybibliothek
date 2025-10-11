@@ -11,6 +11,7 @@
   .row{display:flex;flex-wrap:wrap;gap:8px}
   .card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   .muted{color:#666;font-size:.9rem}
+  /* Number-Spinner ausblenden */
   input[type=number]::-webkit-outer-spin-button,
   input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]{-moz-appearance:textfield}
@@ -29,11 +30,11 @@
   <p id="msg"></p>
 </div>
 
-<!-- CHANGELOG -->
+<!-- CHANGELOG (wird nach Login ausgeblendet) -->
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
-    <li><strong>11.10.2025 10:35 Uhr:</strong> Globale Textsuche über alle Datenbank-Felder hinzugefügt.</li>
+    <li><strong>11.10.2025 10:38 Uhr:</strong> Globale live Textsuche über alle Datenbank-Felder hinzugefügt.</li>
     <li><strong>11.10.2025 09:48 Uhr:</strong> Änderungsverzeichnis hinzugefügt.</li>
     <li><strong>11.10.2025 01:20 Uhr:</strong> Beginn der Übertragung persönlicher Bewertungen aus der alten Liste.</li>
     <li><strong>10.10.2025 23:20 Uhr:</strong> Datenbankschema aktualisiert (<code>ALTER TABLE public.whiskies</code>); neue Bestandsfelder angelegt.</li>
@@ -67,6 +68,7 @@
     <button id="refresh">Aktualisieren</button>
   </div>
 
+  <!-- Suchfeld -->
   <input id="searchInput" type="text" placeholder="Suchen …"
          style="width:100%;padding:8px;margin-top:10px;font-size:1rem">
 
@@ -75,19 +77,20 @@
 
 <script type="module">
 /* ---------- Konfiguration ---------- */
-const SUPABASE_URL="https://dffqempnuqymcofvgkxx.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
-import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-window.supabase=supabase;
+const SUPABASE_URL = "https://dffqempnuqymcofvgkxx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmZnFlbXBudXF5bWNvZnZna3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5OTY3NDMsImV4cCI6MjA3NTU3Mjc0M30.jHxiRy2Q2dQpvA-RuV3xcJsAy3hkDm6psYnOeNjY6pA";
 
-const USERS_HASH={
-  "Philipp":"bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
-  "Andreas":"7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabase = supabase;
+
+const USERS_HASH = {
+  "Philipp": "bd6be2c40ce5e8a3cb66602b235a31a8497c57a74fbd7ff827853e1d396627ca",
+  "Andreas": "7f894c422eebf8c5b8c38330ec4ec297668329afa365a0c1e61a097f094af3fe"
 };
 
 /* ---------- Login ---------- */
-function buf2hex(b){return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function buf2hex(b){return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function sha256Hex(t){return buf2hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)))}
 document.getElementById("enter").onclick=async()=>{
   const pw=document.getElementById("pass").value.trim();
@@ -101,7 +104,7 @@ document.getElementById("logout").onclick=()=>{localStorage.removeItem("whiskydb
 const me=localStorage.getItem("whiskydb_user");if(me)showApp(me);
 
 function showApp(name){
-  document.getElementById("changelog").style.display="none";
+  document.getElementById("changelog").style.display="none";  // Changelog nach Login ausblenden
   document.getElementById("lockscreen").style.display="none";
   document.getElementById("app").style.display="";
   document.getElementById("user").textContent=name;
@@ -117,13 +120,13 @@ async function showList(){
   document.getElementById("content").innerHTML="<p>Lade Liste …</p>";
   const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
   if(error){document.getElementById("content").textContent=error.message;return;}
-  window.allWhiskies=data||[];
+  window.allWhiskies = data || [];
   renderList(window.allWhiskies);
 }
 
-/* ---------- renderList ---------- */
+/* ---------- renderList (wird von showList und vom Filter genutzt) ---------- */
 function renderList(list){
-  if(!list||!list.length){
+  if(!list || !list.length){
     document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
     return;
   }
@@ -135,7 +138,7 @@ function renderList(list){
           <strong>${w.name}</strong> ${w.distillery?"– "+w.distillery:""}<br>
           <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
           <span>${w.volume_ml||'-'} ml | ${w.abv||'-'} % vol</span><br>
-          <span>Preis: ${w.price_eur? w.price_eur.toFixed(2)+' €':''} (${w.price_per_liter_eur? w.price_per_liter_eur.toFixed(2)+' €/L':''})</span><br>
+          <span>Preis: ${w.price_eur? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
@@ -143,40 +146,37 @@ function renderList(list){
   document.querySelectorAll(".viewBtn").forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
 }
 
-/* ---------- Textfilter ---------- */
+/* ---------- Globaler Textfilter (über alle Felder) ---------- */
 document.getElementById("searchInput").oninput=(e)=>{
   const q=e.target.value.toLowerCase();
-  if(!window.allWhiskies)return;
-  const filtered=window.allWhiskies.filter(w=>
-    Object.values(w).some(val=>
-      val&&val.toString().toLowerCase().includes(q)
-    )
+  if(!window.allWhiskies){return;}
+  const filtered = window.allWhiskies.filter(w =>
+    Object.values(w).some(val => val && val.toString().toLowerCase().includes(q))
   );
   renderList(filtered);
-}
+};
 
 /* ---------- Neuer Whisky ---------- */
 function showAddForm(){
   document.getElementById("content").innerHTML=`
   <div class="card">
-  <h3>Neuer Whisky</h3>
-  <div class="field"><input id="name" placeholder="Name (Whisky)"></div>
-  <div class="field"><input id="dist" placeholder="Brennerei"></div>
-  <div class="field"><input id="orig" placeholder="Herkunft (Land/Region)"></div>
-  <div class="field"><input id="age" type="number" placeholder="Alter (Jahre)"></div>
-  <div class="field"><input id="vol" type="number" placeholder="Volumen (ml)"></div>
-  <div class="field"><input id="price" type="number" step="0.01" placeholder="Preis (€)"></div>
-  <div class="field"><input id="abv" type="number" step="0.1" placeholder="% vol"></div>
-  <!-- Kein allgemeines stock_percent mehr -->
-  <button id="save">Speichern</button>
-  <p id="addMsg" class="muted"></p>
+    <h3>Neuer Whisky</h3>
+    <div class="field"><input id="name" placeholder="Name (Whisky)"></div>
+    <div class="field"><input id="dist" placeholder="Brennerei"></div>
+    <div class="field"><input id="orig" placeholder="Herkunft (Land/Region)"></div>
+    <div class="field"><input id="age" type="number" placeholder="Alter (Jahre)"></div>
+    <div class="field"><input id="vol" type="number" placeholder="Volumen (ml)"></div>
+    <div class="field"><input id="price" type="number" step="0.01" placeholder="Preis (€)"></div>
+    <div class="field"><input id="abv" type="number" step="0.1" placeholder="% vol"></div>
+    <!-- kein allgemeines stock_percent mehr -->
+    <button id="save">Speichern</button>
+    <p id="addMsg" class="muted"></p>
   </div>`;
   document.getElementById("save").onclick=async()=>{
     const row={
       name:val("name"),distillery:val("dist"),origin:val("orig"),
       age_years:num("age"),volume_ml:num("vol"),
       price_eur:num("price"),abv:num("abv")
-      // kein stock_percent hier
     };
     if(!row.name){msg("addMsg","Name ist Pflicht.");return;}
     msg("addMsg","Speichert …");
@@ -221,7 +221,7 @@ async function showDetail(id) {
               : `<h3>${escapeHtml(w.name)}</h3>
                  <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
                  <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
-                 <p>Preis: ${w.price_eur ? w.price_eur.toFixed(2) + " €" : "-"} (${w.price_per_liter_eur ? w.price_per_liter_eur.toFixed(2) + " €/L" : "-"})</p>`}
+                 <p>Preis: ${w.price_eur ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>`}
           </div>
         </div>
 
