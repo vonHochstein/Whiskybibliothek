@@ -263,9 +263,12 @@ function renderStars(value, readonly=true){
   let html = '<span class="stars' + (readonly?' readonly':'') + '">';
   const totalStars = readonly ? 5 : 10;
   for(let i=1; i<=totalStars; i++){
+  if(readonly){
     if(stars>=i) html += '<span class="star full" data-val="'+(i*2)+'"></span>';
     else if(stars+0.5===i) html += '<span class="star half" data-val="'+(i*2-1)+'"></span>';
     else html += '<span class="star" data-val="'+(i*2)+'"></span>';
+  } else {
+    html += '<span class="star" data-val="'+i+'"></span>';
   }
   return html + '</span>';
 }
@@ -312,11 +315,11 @@ function renderList(list){
           <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
           <span>${w.volume_ml??'-'} ml | ${w.abv??'-'} % vol</span><br>
           <span>Preis: ${w.price_eur!=null? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur!=null? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
-          <span>
-            A=${a??'-'} ${renderStars(a)} / 
-            P=${p??'-'} ${renderStars(p)} / 
-            ⌀${avg?avg.toFixed(1):'-'}/10 ${renderStars(avg)}
-          </span><br>
+          <div style="margin-top:4px">
+            <div>A=${a??'-'} ${renderStars(a)}</div>
+            <div>P=${p??'-'} ${renderStars(p)}</div>
+            <div>⌀${avg?avg.toFixed(1):'-'}/10 ${renderStars(avg)}</div>
+          </div>
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
