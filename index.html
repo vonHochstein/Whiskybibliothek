@@ -257,44 +257,76 @@ function applySort(list){
 }
 
 /* ---------- Sterne-Helfer ---------- */
-function renderStars(value, readonly=true){
-  if(value==null || isNaN(value)) return '<span class="muted">-</span>';
-  const stars = Math.round((value/2)*2)/2; // auf halbe Schritte runden
-  let html = '<span class="stars' + (readonly?' readonly':'') + '">';
+function renderStars(value, readonly = true){
+  if (value == null || isNaN(value)) return '<span class="muted">-</span>';
+
+  // 5 Sterne (Anzeige) → halbe Schritte; 10 Sterne (Edit) → 1 Punkt pro Stern
+  const starsHalf = Math.round((value / 2) * 2) / 2; // z.B. 7 → 3.5
   const totalStars = readonly ? 5 : 10;
-  for(let i=1; i<=totalStars; i++){
-  if(readonly){
-    if(stars>=i) html += '<span class="star full" data-val="'+(i*2)+'"></span>';
-    else if(stars+0.5===i) html += '<span class="star half" data-val="'+(i*2-1)+'"></span>';
-    else html += '<span class="star" data-val="'+(i*2)+'"></span>';
-  } else {
-    html += '<span class="star" data-val="'+i+'"></span>';
+
+  let html = '<span class="stars' + (readonly ? ' readonly' : '') + '">';
+  for (let i = 1; i <= totalStars; i++) {
+    if (readonly) {
+      // Anzeige: 5 Sterne mit halben Schritten, data-val bleibt 2er-Skala (2,4,6,8,10)
+      if (starsHalf >= i) {
+        html += '<span class="star full" data-val="' + (i * 2) + '"></span>';
+      } else if (starsHalf + 0.5 === i) {
+        html += '<span class="star half" data-val="' + (i * 2 - 1) + '"></span>';
+      } else {
+        html += '<span class="star" data-val="' + (i * 2) + '"></span>';
+      }
+    } else {
+      // Edit: 10 Sterne, jeder Stern = 1 Punkt, data-val = 1..10
+      html += '<span class="star" data-val="' + i + '"></span>';
+    }
   }
-  return html + '</span>';
-}
-function updateStars(prefix,val){
-  const stars=document.querySelectorAll('#'+prefix+'_stars .star');
-  if(!stars.length) return;
-  const starsVal=Math.round((val/2)*2)/2;
-  stars.forEach(st=>{
-    const i=parseInt(st.dataset.val,10)/2;
-    st.classList.remove('full','half');
-    if(starsVal>=i) st.classList.add('full');
-    else if(starsVal+0.5===i) st.classList.add('half');
-  });
-}
-function attachStarControls(prefix){
-  const stars=document.querySelectorAll('#'+prefix+'_stars .star');
-  const input=document.getElementById(prefix+'_rating');
-  stars.forEach(s=>{
-    s.addEventListener('click',()=>{
-      input.value = s.dataset.val;
-      updateStars(prefix, parseFloat(s.dataset.val));
-    });
-  });
-  input?.addEventListener('input',()=>updateStars(prefix, parseFloat(input.value)));
+  html += '</span>';
+  return html;
 }
 
+function updateStars(prefix, val){
+  const stars = document.querySelectorAll('#' + prefix + '_stars .star');
+  if (!stars.length) return;
+
+  const total = stars.length;
+
+  // Edit-Modus: 10 Sterne, 1 Punkt = 1 Stern
+  if (total === 10) {
+    const v = Math.max(0, Math.min(10, Number(val) || 0));
+    stars.forEach((st, idx) => {
+      st.classList.remove('half', 'full');
+      st.classList.toggle('full', idx < v);
+    });
+    return;
+  }
+
+  // Anzeige: 5 Sterne mit halben Schritten
+  const halfVal = Math.round((val / 2) * 2) / 2; // 0..5 in 0.5-Schritten
+  stars.forEach((st, idx) => {
+    const i = idx + 1; // 1..5
+    st.classList.remove('full', 'half');
+    if (halfVal >= i) st.classList.add('full');
+    else if (halfVal + 0.5 === i) st.classList.add('half');
+  });
+}
+
+function attachStarControls(prefix){
+  const stars = document.querySelectorAll('#' + prefix + '_stars .star');
+  const input = document.getElementById(prefix + '_rating');
+
+  stars.forEach(s => {
+    s.addEventListener('click', () => {
+      input.value = s.dataset.val;          // 1..10 direkt setzen
+      updateStars(prefix, Number(s.dataset.val));
+    });
+  });
+
+  input?.addEventListener('input', () => updateStars(prefix, Number(input.value)));
+
+  // NEU: initialen Wert visualisieren
+  updateStars(prefix, Number(input?.value));
+}
+  
 /* ---------- renderList ---------- */
 function renderList(list){
   document.getElementById("whiskyCount").textContent = `${list.length} Whiskys angezeigt`;
