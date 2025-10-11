@@ -246,7 +246,7 @@ function renderDetailView(w, id, user, editing) {
         ${editing
           ? `<button id="save">Speichern</button> <button id="cancel">Abbrechen</button>`
           : `<button id="edit" ${user ? "" : "style='display:none'"}>Bearbeiten</button>`}
-        <button id="back">Zurück</button>
+        ${id != null ? `<button id="back">Zurück</button>` : ""}
       </div>
       <p id="detailMsg" class="muted"></p>
     </div>`;
