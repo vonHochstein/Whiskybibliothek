@@ -1,8 +1,7 @@
 # Whiskybibliothek
 
 Ideen
-- Filte rund Suchfunktionen
-  - schnelle Textsuche
+- Filter rund Suchfunktionen
   - Dropdown Filter
 - Dashboard Statistik
   - Gesamtzahl
