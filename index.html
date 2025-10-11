@@ -52,6 +52,48 @@
     opacity:1
   }
   .stars.readonly .star{cursor:default}
+
+  /* --- Optische Aufbereitung persönliche Bereiche --- */
+.card.personal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  padding: 8px 10px;
+  transition: box-shadow .2s ease;
+}
+.card.personal:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+
+.card.personal h4 {
+  margin: 0 0 6px 0;
+  font-size: 1.05rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: linear-gradient(90deg,#c98f38 0%,#b17828 100%);
+  color: #fff;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 1px rgba(0,0,0,.2);
+}
+
+.personal .field-block {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.04);
+}
+body.dark .personal .field-block {
+  background: rgba(255,255,255,0.06);
+}
+.personal label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
 </style>
 
 <h1>Whiskybibliothek</h1>
@@ -426,14 +468,14 @@ function renderDetailView(w, id, user, editing) {
 
       <!-- Zwei Karten für Philipp / Andreas -->
       <div class="two-col">
-        <div class="card">
+      <div class="card personal">
           <h4>Philipp</h4>
           ${renderUserBlock("philipp", user, w, editing, "Philipp")}
-        </div>
-        <div class="card">
+      </div>
+      <div class="card personal">
           <h4>Andreas</h4>
           ${renderUserBlock("andreas", user, w, editing, "Andreas")}
-        </div>
+      </div>
       </div>
 
       <!-- Metadaten -->
