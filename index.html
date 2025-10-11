@@ -723,7 +723,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
   if (!canEditThisCard) {
     return `
       <p><p>Bewertung: ${renderStars(rating)} (${rating ?? '-'}/10)</p>
-      <p>Notizen:<br>${notes ? escapeHtml(notes) : "-"}</p>
+      <p>Notizen:<br>${notes ? escapeHtml(notes).replace(/\n/g, '<br>') : '-'}</p>
       <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>
       <p>Bestand: ${stock ?? "-"} %</p>
     `;
