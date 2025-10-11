@@ -498,6 +498,8 @@ function renderDetailView(w, id, user, editing) {
         </div>
       </div>
 
+      <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>
+
       <!-- Zwei Karten für Philipp / Andreas -->
       <div class="two-col">
       <div class="card personal">
@@ -719,7 +721,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 
   if (!canEditThisCard) {
     return `
-      <p>Bewertung: ${rating ?? "-"} ${renderStars(rating)}</p>
+      <p><p>Bewertung: ${renderStars(rating)} (${rating ?? '-'}/10)</p>
       <p>Notizen:<br>${notes ? escapeHtml(notes) : "-"}</p>
       <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>
       <p>Bestand: ${stock ?? "-"} %</p>
@@ -728,8 +730,10 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
     // Sterne erst nach Einfügen ins DOM koppeln
     setTimeout(()=>attachStarControls(prefix), 0);
     return `
-      <p>Bewertung: <input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ""}">
-      <span id="${prefix}_stars">${renderStars(rating,false)}</span></p>
+      <p>Bewertung:
+        <span id="${prefix}_stars">${renderStars(rating,false)}</span>
+        (<input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ''}" style="width:3em;">/10)
+      </p>
       <p>Notizen:<br>
       <textarea id="${prefix}_notes" rows="4"
         style="width:calc(100% - 14px);min-height:80px;resize:vertical;overflow:hidden;
