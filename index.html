@@ -480,24 +480,25 @@ function renderDetailView(w, id, user, editing) {
         <div style="flex:0 0 150px">
           <img src="${w.image_url || "https://via.placeholder.com/150x200?text=No+Image"}" class="thumb" id="imgPrev">
         </div>
-        <div style="flex:1">
-          ${editing
-            ? `<input id="name" value="${w.name || ""}" placeholder="Whisky"><br>
-               <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>
-               <input id="distillery" value="${w.distillery || ""}" placeholder="Brennerei"><br>
-               <input id="origin" value="${w.origin || ""}" placeholder="Herkunft"><br>
-               <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
-               <input id="volume_ml" type="number" value="${w.volume_ml || ""}" placeholder="Volumen (ml)"><br>
-               <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
-               <input id="abv" type="number" step="0.1" value="${w.abv || ""}" placeholder="% vol."><br>
-               <p><strong>Bild ändern / hinzufügen:</strong></p>
-               <input type="file" id="imgUpload" accept="image/*">
-               <p id="imgMsg" class="muted"></p>`
-            : `<h3>${escapeHtml(w.name)}</h3>
-               <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
-               <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
-               <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>`}
-        </div>
+          <div style="flex:1">
+            ${editing
+              ? `<input id="name" value="${w.name || ""}" placeholder="Whisky"><br>
+                 <input id="distillery" value="${w.distillery || ""}" placeholder="Brennerei"><br>
+                 <input id="origin" value="${w.origin || ""}" placeholder="Herkunft"><br>
+                 <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
+                 <input id="volume_ml" type="number" value="${w.volume_ml || ""}" placeholder="Volumen (ml)"><br>
+                 <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
+                 <input id="abv" type="number" step="0.1" value="${w.abv || ""}" placeholder="% vol."><br>
+                 <p><strong>Bild ändern / hinzufügen:</strong></p>
+                 <input type="file" id="imgUpload" accept="image/*">
+                 <p id="imgMsg" class="muted"></p>
+                 <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`
+              : `<h3>${escapeHtml(w.name)}</h3>
+                 <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
+                 <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
+                 <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>
+                 <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`}
+          </div>
       </div>
 
       <!-- Zwei Karten für Philipp / Andreas -->
