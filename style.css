@@ -1,0 +1,204 @@
+  :root{
+    --bg:#fafafa; --text:#222; --muted:#666; --card:#fff; --border:#ddd;
+    --input-bg:#fff; --btn-bg:#eee; --btn-text:#222;
+  }
+  body.dark{
+    --bg:#1e1e1e; --text:#f5f5f5; --muted:#aaaaaa; --card:#2a2a2a; --border:#444;
+    --input-bg:#222; --btn-bg:#333; --btn-text:#f5f5f5;
+  }
+
+  body {
+    font-family: system-ui,Segoe UI,Roboto,Arial;
+    margin: 20px;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  h1,h2,h3 { margin: .4em 0 }
+  input,textarea,button,select {
+    font-size: 1rem;
+    padding: 6px;
+    margin: 4px 0;
+    color: var(--text);
+    background: var(--input-bg);
+  }
+
+  .row { display:flex; flex-wrap:wrap; gap:8px }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    box-sizing: border-box;
+  }
+
+  .muted { color: var(--muted); font-size: .9rem }
+  button {
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(0.98) }
+
+  /* Number-Spinner ausblenden */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0 }
+  input[type=number]{ -moz-appearance:textfield }
+
+  /* Zweispaltige Kartenansicht */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 0;
+  margin-top: 10px;
+  align-items: start;      /* nicht stretch! */
+  justify-items: stretch;
+  vertical-align: top;     /* sichert gleiche Startlinie */
+}
+
+.two-col > .card.personal {
+  margin-top: 0 !important;
+  vertical-align: top;
+}
+
+  @media (max-width:768px){ .two-col { grid-template-columns:1fr; } }
+
+  .field { margin-bottom:6px }
+  img.thumb { width:100%; max-width:220px; border-radius:6px; object-fit:cover }
+
+  @media (max-width:600px){
+    .search-sort { grid-template-columns:1fr !important; }
+    .search-sort select { width:100%; }
+  }
+
+  /* Sterne-Bewertung */
+  .stars { display:inline-block; font-size:1.05rem; line-height:1; color:#d4af37; vertical-align:middle }
+  .star { cursor:pointer; display:inline-block; width:1.1em; position:relative }
+  .star::before { content:'\2605'; opacity:0.32 }
+  .star.full::before { opacity:1 }
+  .star.half::before {
+    background:linear-gradient(90deg,#d4af37 50%,transparent 50%);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    opacity:1;
+  }
+  .stars.readonly .star { cursor:default }
+
+  /* --- Optische Aufbereitung persönliche Bereiche --- */
+  .card.personal {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(201,143,56,0.1) 0%, rgba(255,255,255,0) 100%);
+    border: 1px solid #c98f38;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    padding: 10px;
+    transition: box-shadow .2s ease;
+  }
+  .card.personal:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  }
+
+  body.dark .card.personal {
+    background: linear-gradient(180deg, rgba(185,135,40,0.2) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid #444;
+  }
+
+  .card.personal h4 {
+    margin: 0 0 6px 0;
+    font-size: 1.05rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: linear-gradient(90deg,#c98f38 0%,#b17828 100%);
+    color: #fff;
+    letter-spacing: 0.03em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.2);
+  }
+
+  /* Gleichmäßige Struktur und optische Abhebung */
+  .personal p {
+    margin: 6px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .personal p:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .personal p:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .personal strong {
+    display: inline-block;
+    min-width: 110px;
+    font-weight: 600;
+    color: #b17828;
+  }
+
+  h1 {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.03em;
+    color: #b17828;
+    background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+    margin-bottom: 0.4em;
+  }
+
+  #content.list { display:block; padding-top:2px; }
+  #viewToggle { font-size:1.1rem; }
+
+  #themeToggle, #viewToggle {
+    font-size: 1.1rem;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+  }
+
+  #content.grid .card {
+    min-height: 350px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  /* Dynamisches Raster NUR in der Listenansicht */
+  #content.grid.listview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 10px;
+    padding: 0px;
+    align-items: start;
+  }
+
+  /* Standard für Detailansicht */
+  #content { display:block; padding:0; }
+
+  /* Kachel-Höhe im Rastermodus */
+  #content.grid.listview .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 360px;
+    height: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  /* Einheitliche vertikale Startposition und Listenabstand */
+  #content.list { padding-top:2px; }
+  #content.grid.listview { padding-top:2px; }
+  #content.list .card + .card { margin-top:10px; }
