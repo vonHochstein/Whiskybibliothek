@@ -950,5 +950,15 @@ document.addEventListener("input", (e) => {
   }
 });  
 
+// iOS-Standalone-Fix für Passwortfeld auf dem Sperrbildschirm
+if (window.navigator.standalone) {
+  const passInput = document.getElementById("pass");
+  if (passInput) {
+    const focusFix = () => setTimeout(() => passInput.focus(), 200);
+    passInput.addEventListener("touchstart", focusFix, false);
+    passInput.addEventListener("click", focusFix, false);
+  }
+}
+
 </script>
 </html>
