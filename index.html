@@ -949,24 +949,7 @@ document.addEventListener("input", (e) => {
     e.target.style.height = "auto";
     e.target.style.height = (e.target.scrollHeight) + "px";
   }
-});  
-
-// iOS-Standalone-Fix (Variante B) – Tastatur erzwingen beim Passwortfeld
-if (window.navigator.standalone) {
-  const passInput = document.getElementById("pass");
-  if (passInput) {
-    const focusFix = () => {
-      passInput.blur();                // iOS-Hack: kurz entkoppeln
-      passInput.disabled = true;       // deaktivieren
-      setTimeout(() => {
-        passInput.disabled = false;    // wieder aktivieren
-        passInput.focus();             // Fokus erneut setzen
-      }, 200);
-    };
-    passInput.addEventListener("touchstart", focusFix, false);
-    passInput.addEventListener("click", focusFix, false);
-  }
-}
+});
 
 // "Fake"-Passwortfeld: Zeichen werden sofort durch • ersetzt
 (function(){
