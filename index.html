@@ -418,6 +418,16 @@ function getFilteredList(){
   );
   return applySort(list);
 }
+
+/* ---------- iOS-Standalone-Fix: Tastatur im Suchfeld ---------- */
+if (window.navigator.standalone) {
+  const input = document.getElementById("searchInput");
+  if (input) {
+    input.addEventListener("touchend", () => setTimeout(() => input.focus(), 150));
+  }
+}
+
+/* ---------- Durchschnitt ---------- */
 function ratingAvg(w){
   const a = parseFloat(w.rating_andreas);
   const p = parseFloat(w.rating_philipp);
