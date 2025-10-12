@@ -419,11 +419,13 @@ function getFilteredList(){
   return applySort(list);
 }
 
-/* ---------- iOS-Standalone-Fix: Tastatur im Suchfeld ---------- */
+// iOS-Standalone-Fix: Tastatur erzwingen
 if (window.navigator.standalone) {
   const input = document.getElementById("searchInput");
   if (input) {
-    input.addEventListener("touchend", () => setTimeout(() => input.focus(), 150));
+    const focusFix = () => setTimeout(() => input.focus(), 200);
+    input.addEventListener("touchstart", focusFix, false);
+    input.addEventListener("click", focusFix, false);
   }
 }
 
