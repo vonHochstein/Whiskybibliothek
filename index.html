@@ -116,6 +116,81 @@ h1 {
   margin-bottom: 0.4em;
 }
 
+/* Optische Abhebung der Feldüberschriften in persönlichen Bereichen */
+.personal p {
+  margin: 6px 0 10px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.personal p:first-of-type {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+  border-bottom: none; /* entfernt Linie direkt unter der Überschrift */
+}
+.personal p:last-child {
+  border-bottom: none;
+}
+.personal strong {
+  display: inline-block;
+  min-width: 110px;
+  font-weight: 600;
+  color: #b17828;
+}
+
+/* --- Ansichtsmodi: Raster / Liste --- */
+#content.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+#content.list {
+  display: block;
+}
+
+#viewToggle {
+  font-size: 1.1rem;
+}
+
+#themeToggle, #viewToggle {
+  font-size: 1.1rem;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+/* --- Einheitliche Kachelhöhen im Rastermodus --- */
+#content.grid .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100x;     /* Mindesthöhe der Karte */
+  height: 100%;
+}
+
+.card {
+  margin: 2px;  /* sorgt für 1–2 px Abstand ringsum */
+}
+
+/* --- Gleichmäßige Abstände im Rastermodus --- */
+#content.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;                /* etwas mehr Luft zwischen Kacheln */
+  padding: 2px;             /* winziger Innenabstand des Grids selbst */
+}
+
+#content.grid .card {
+  min-height: 360px;
+  border-radius: 8px;
+  box-sizing: border-box;   /* verhindert Überlappung */
+}
+
 </style>
 
 <h1>Whiskybibliothek</h1>
@@ -131,6 +206,8 @@ h1 {
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>12.10.2025 01:57 Uhr:</strong> Rasterdarstellung optimiert: Einheitliche Kachelhöhen und Abstände.</li>
+    <li><strong>12.10.2025 01:35 Uhr:</strong> Dynamische Rasterdarstellung implementiert: Kartenanordnung passt sich automatisch Bildschirmbreite an (dynamische Spalten). Umschaltfunktion zwischen Listen- und Rasteransicht über Schalter neben dem Hell/Dunkel-Button hinzugefügt.</li>
     <li><strong>12.10.2025 01:04 Uhr:</strong> Überarbeitung Bewertungsfunkltion, Ergänzung Gesamtwertung (Durchschnitt).</li>
     <li><strong>12.10.2025 00:27 Uhr:</strong> Optische Optimierung der persönlichen Bewertungskarten.</li>
     <li><strong>12.10.2025 00:12 Uhr:</strong> Optische Anpassungen an Listenbildern vorgenommen (Hintergrundentfernung, Proportionen, ...).</li>
@@ -173,6 +250,7 @@ h1 {
     <div>Angemeldet als <strong id="user"></strong></div>
     <div class="row" style="gap:6px">
       <button id="themeToggle" title="Hell/Dunkel">🌙</button>
+      <button id="viewToggle" title="Ansicht wechseln">🧱</button>
       <button id="logout">Abmelden</button>
     </div>
   </div>
@@ -237,6 +315,25 @@ document.addEventListener("click",(e)=>{
     localStorage.setItem("theme", isDark ? "dark" : "light");
   }
 });
+
+/* --- Raster-/Listenansicht umschalten --- */
+const viewToggle = document.getElementById("viewToggle");
+let currentView = localStorage.getItem("whisky_view") || "list";
+updateViewIcon();
+
+viewToggle.addEventListener("click", () => {
+  currentView = currentView === "grid" ? "list" : "grid";
+  localStorage.setItem("whisky_view", currentView);
+  updateViewIcon();
+  renderList(getFilteredList()); // neu zeichnen
+});
+
+function updateViewIcon() {
+  const content = document.getElementById("content");
+  content.classList.remove("grid", "list");
+  content.classList.add(currentView);
+  viewToggle.textContent = currentView === "grid" ? "📋" : "🧱";
+}
 
 /* ---------- Login ---------- */
 function buf2hex(b){return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
@@ -722,10 +819,10 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 
   if (!canEditThisCard) {
     return `
-      <p><p>Bewertung: ${renderStars(rating)} (${rating ?? '-'}/10)</p>
-      <p>Notizen:<br>${notes ? escapeHtml(notes).replace(/\n/g, '<br>') : '-'}</p>
-      <p>Kaufwunsch: ${wish ? "☑" : "☐"}</p>
-      <p>Bestand: ${stock ?? "-"} %</p>
+      <p><strong>Bewertung:</strong> ${renderStars(rating)} (${rating ?? '-'}/10)</p>
+      <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes).replace(/\n/g, '<br>') : '-'}</p>
+      <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
+      <p><strong>Bestand:</strong> ${stock ?? '-'} %</p>
     `;
   } else {
     // Sterne erst nach Einfügen ins DOM koppeln
