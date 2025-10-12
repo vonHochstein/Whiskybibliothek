@@ -221,6 +221,19 @@ h1 {
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>12.10.2025 20:21 Uhr:</strong> Tabelle <code>whiskies_new_flags</code> fertiggestellt, CSV-Import abgeschlossen (alle Flaggen entfernt, Daten bereinigt).</li>
+    <li><strong>12.10.2025 20:18 Uhr:</strong> Alte Policies aus <code>whiskies</code> auf <code>whiskies_new_flags</code> übertragen; API-Zugriff für <code>anon</code> (SELECT/INSERT/UPDATE/DELETE) wieder aktiviert.</li>
+    <li><strong>12.10.2025 20:12 Uhr:</strong> Fehleranalyse: leere Listenansicht nach Tabellenumbenennung → Ursache waren fehlende Row-Level-Security-Regeln.</li>
+    <li><strong>12.10.2025 19:55 Uhr:</strong> Neue Import-Strategie umgesetzt (Backup → Truncate → CSV-Import in bestehende Tabelle); Ergebnis stabil und konsistent.</li>
+    <li><strong>12.10.2025 19:15 Uhr:</strong> iOS-Standalone-Fix entfernt (Web-App-Modus endgültig verworfen).</li>
+    <li><strong>12.10.2025 18:45 Uhr:</strong> Datenbankbereinigung abgeschlossen – alle fehlerhaften Flaggeneinträge in <code>whiskies</code> identifiziert und korrigiert; saubere CSV exportiert als Grundlage für Neuimport.</li>
+    <li><strong>12.10.2025 18:10 Uhr:</strong> Ursachenanalyse für unterschiedliche Kartenhöhen in der Detailansicht</li>
+    <li><strong>12.10.2025 16:50 Uhr:</strong> Testphase zur Eingabe- und Speicherlogik der Notizfelder; verschiedene Varianten (Enter blockieren, Soft-Wrap, automatische Glättung) erprobt.</li>
+    <li><strong>12.10.2025 15:30 Uhr:</strong> Code-Revision von <code>renderUserBlock()</code> → Harmonisierung der Edit- und Read-Only-Darstellung.</li>
+    <li><strong>12.10.2025 13:50 Uhr:</strong> Entfernung der Meta-Tags für iOS-Vollbild- und Web-App-Modus; Rückkonfiguration zur Standard-Website wegen Apple Bugs.</li>
+    <li><strong>12.10.2025 12:30 Uhr:</strong> Revision und Tests des HTML-Codes</li>
+    <li><strong>12.10.2025 11:20 Uhr:</strong> Technische Grundanalyse zur Implementierung der Freistellfunktion abgeschlossen; Entscheidung: Umsetzung als schlanke WebApp mit optionaler Integration in die Whisky-Apps-Seite.</li>
+    <li><strong>12.10.2025 10:30 Uhr:</strong> Projektstart der geplanten Mini-WebApp zur Bildbearbeitung („Zauberstab-Funktion“) für automatisches Freistellen von Whiskyflaschen auf weißem Hintergrund (PNG-Export, Toleranzregelung, manueller Radierer geplant).</li>
     <li><strong>12.10.2025 04:25 Uhr:</strong> Rückabwicklung der iOS-WebApp-Funktion, da Apple im Standalone-Modus keine Tastatureingabe zulässt. Vollbildmodus entfernt, Seite wieder als reguläre Website konfiguriert.</li>
     <li><strong>12.10.2025 04:02 Uhr:</strong> iOS-Standalone-Fix für Passwortfeld.</li>
     <li><strong>12.10.2025 03:09 Uhr:</strong> iOS-Vollbildmodus aktiviert und App-Icon hinzugefügt. Whiskybibliothek kann nun als Web-App über den Homebildschirm geöffnet werden (ohne Safari-Adressleiste, mit eigenem Symbol).</li>
