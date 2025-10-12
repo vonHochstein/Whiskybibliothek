@@ -138,14 +138,6 @@ h1 {
   color: #b17828;
 }
 
-/* --- Ansichtsmodi: Raster / Liste --- */
-#content.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 14px;
-  align-items: start;
-}
-
 #content.list {
   display: block;
 }
@@ -164,31 +156,50 @@ h1 {
   border-radius: 6px;
 }
 
-/* --- Einheitliche Kachelhöhen im Rastermodus --- */
 #content.grid .card {
+  min-height: 350px;
+  border-radius: 8px;
+  box-sizing: border-box;   /* verhindert Überlappung */
+}
+
+/* Dynamisches Raster NUR in der Listenansicht */
+#content.grid.listview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 10px;
+  padding: 0px;
+  align-items: start;
+}
+
+/* Standard für Detailansicht */
+#content {
+  display: block;
+  padding: 0;
+}
+
+/* Kachel-Höhe im Rastermodus */
+#content.grid.listview .card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 100x;     /* Mindesthöhe der Karte */
+  min-height: 360px;   /* <- falls du 100px willst, hier anpassen */
   height: 100%;
-}
-
-.card {
-  margin: 2px;  /* sorgt für 1–2 px Abstand ringsum */
-}
-
-/* --- Gleichmäßige Abstände im Rastermodus --- */
-#content.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 16px;                /* etwas mehr Luft zwischen Kacheln */
-  padding: 2px;             /* winziger Innenabstand des Grids selbst */
-}
-
-#content.grid .card {
-  min-height: 360px;
   border-radius: 8px;
-  box-sizing: border-box;   /* verhindert Überlappung */
+  box-sizing: border-box;
+}
+
+/* --- Einheitliche vertikale Startposition und Listenabstand --- */
+#content.list {
+  padding-top: 2px; /* gleiche Innenluft wie Raster */
+}
+
+#content.grid.listview {
+  padding-top: 2px; /* statt 0px */
+}
+
+/* Abstand nur zwischen Karten in der Listenansicht */
+#content.list .card + .card {
+  margin-top: 10px;
 }
 
 </style>
@@ -207,7 +218,7 @@ h1 {
   <h3>Changelog</h3>
   <ul>
     <li><strong>12.10.2025 01:57 Uhr:</strong> Rasterdarstellung optimiert: Einheitliche Kachelhöhen und Abstände.</li>
-    <li><strong>12.10.2025 01:35 Uhr:</strong> Dynamische Rasterdarstellung für iPad implementiert: Kartenanordnung passt sich automatisch Bildschirmbreite an (dynamische Spalten). Umschaltfunktion zwischen Listen- und Rasteransicht über Schalter neben dem Hell/Dunkel-Button hinzugefügt.</li>
+    <li><strong>12.10.2025 01:35 Uhr:</strong> Dynamische Rasterdarstellung implementiert: Kartenanordnung passt sich automatisch Bildschirmbreite an (dynamische Spalten). Umschaltfunktion zwischen Listen- und Rasteransicht über Schalter neben dem Hell/Dunkel-Button hinzugefügt.</li>
     <li><strong>12.10.2025 01:04 Uhr:</strong> Überarbeitung Bewertungsfunkltion, Ergänzung Gesamtwertung (Durchschnitt).</li>
     <li><strong>12.10.2025 00:27 Uhr:</strong> Optische Optimierung der persönlichen Bewertungskarten.</li>
     <li><strong>12.10.2025 00:12 Uhr:</strong> Optische Anpassungen an Listenbildern vorgenommen (Hintergrundentfernung, Proportionen, ...).</li>
@@ -330,8 +341,13 @@ viewToggle.addEventListener("click", () => {
 
 function updateViewIcon() {
   const content = document.getElementById("content");
-  content.classList.remove("grid", "list");
-  content.classList.add(currentView);
+  content.classList.remove("grid", "list", "listview");
+  if (currentView === "grid") {
+    content.classList.add("grid", "listview");
+  } else {
+  content.classList.add("list");
+}
+
   viewToggle.textContent = currentView === "grid" ? "📋" : "🧱";
 }
 
@@ -367,6 +383,14 @@ document.getElementById("sortSelect").onchange=()=>renderList(getFilteredList())
 document.getElementById("searchInput").oninput=()=>renderList(getFilteredList());
 
 async function showList(){
+  const content = document.getElementById("content");
+  content.classList.remove("grid", "list", "listview");
+  if (currentView === "grid") {
+    content.classList.add("grid", "listview");
+  } else {
+    content.classList.add("list");
+  }
+
   document.getElementById("content").innerHTML="<p>Lade Liste …</p>";
   const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
   if(error){document.getElementById("content").textContent=error.message;return;}
@@ -569,6 +593,11 @@ function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
 /* ---------- Detailanzeige ---------- */
 function renderDetailView(w, id, user, editing) {
+  // Sicherstellen, dass Raster-Layout deaktiviert wird
+  const content = document.getElementById("content");
+  content.classList.remove("grid", "list", "listview");
+  content.classList.add("list"); // Detailansicht = klassische Einspalten-Darstellung
+
   let pendingImageFile = null; // für NEU vorm INSERT
 
   document.getElementById("content").innerHTML = `
