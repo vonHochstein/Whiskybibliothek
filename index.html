@@ -1,11 +1,6 @@
 <!doctype html>
 <html lang="de">
 <meta charset="utf-8">
-  
-<!-- iOS Vollbildmodus aktivieren -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="apple-touch-icon" sizes="725x725" href="icon-192.png">
@@ -217,7 +212,7 @@ h1 {
 
 <!-- LOGIN -->
 <div id="lockscreen">
-  <input id="pass" type="text" placeholder="Passwort" autocomplete="off" autocapitalize="none" autocorrect="off">
+  <input id="pass" type="password" placeholder="Passwort">
   <button id="enter">Betreten</button>
   <p id="msg"></p>
 </div>
@@ -950,32 +945,6 @@ document.addEventListener("input", (e) => {
     e.target.style.height = (e.target.scrollHeight) + "px";
   }
 });
-
-// "Fake"-Passwortfeld: Zeichen werden sofort durch • ersetzt
-(function(){
-  const input = document.getElementById("pass");
-  if(!input) return;
-
-  let realValue = "";
-
-  input.addEventListener("input", e => {
-    const val = e.target.value;
-    const diff = val.length - realValue.length;
-
-    if (diff > 0) {
-      // neues Zeichen hinzugefügt
-      realValue += val.slice(-diff);
-    } else if (diff < 0) {
-      // Zeichen gelöscht
-      realValue = realValue.slice(0, diff);
-    }
-    // sichtbare Maske
-    e.target.value = "•".repeat(realValue.length);
-  });
-
-  // beim Senden oder Prüfen: realValue enthält den echten Text
-  window.getPasswordValue = () => realValue;
-})();
 
 </script>
 </html>
