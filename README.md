@@ -20,3 +20,6 @@ Ideen
 - Kompfortfunktionen
   - farbliche Hinterlegung bei geringem Bestand
 
+- neue Farbpalette
+- "neu seit letztem Login" - Logfile Popup
+- "zuletzt angemeldet am" / "letzte Änderung von... am..."
