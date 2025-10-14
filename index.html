@@ -363,6 +363,8 @@ function attachStarControls(prefix){
   
 /* ---------- renderList ---------- */
 function renderList(list){
+  console.log("renderList wurde aufgerufen:", list?.length, "Einträge");
+
   document.getElementById("whiskyCount").textContent = `${list.length} Whiskys angezeigt`;
   if(!list || !list.length){
     document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
