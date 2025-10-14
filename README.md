@@ -23,3 +23,4 @@ Ideen
 - neue Farbpalette
 - "neu seit letztem Login" - Logfile Popup
 - "zuletzt angemeldet am" / "letzte Änderung von... am..."
+- feste Dimensionen für Bilder
