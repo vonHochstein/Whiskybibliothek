@@ -425,6 +425,10 @@ async function showDetail(id) {
   renderDetailView(data, id, user, false);
 }
 
+console.log("showDetail verfügbar:", typeof showDetail);
+window.showDetail = showDetail;
+console.log("window.showDetail gesetzt:", typeof window.showDetail);
+
 function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
 /* ---------- Detailanzeige ---------- */
