@@ -23,8 +23,6 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
-    <li><strong>13.10.2025 13:04 Uhr:</strong> <code>Platzhalter</code>.</li>
-    <li><strong>13.10.2025 11:22 Uhr:</strong> Für bessere Bedienung Button <em>„Ansehen“</em> aus der Listen- und Rasteransicht entfernt. Stattdessen ist nun die gesamte Karte klickbar (<code>onclick="openDetail(w.id)"</code>).</li>
     <li><strong>13.10.2025 11:04 Uhr:</strong> Neues App-Icon <em>„Whiskybibliothek“</em> erstellt und integriert (quadratisch, Gold-/Kupfer-Design; als Apple-Touch-Icon eingebunden).</li>
     <li><strong>13.10.2025 10:48 Uhr:</strong> Farbpalette „Gold Edition“ definiert (Primär: <code>#d4af37</code>, <code>#b17828</code>; Akzent: <code>#c98f38</code>; Hintergrund: <code>#1b1b1b</code>; Sekundär: <code>#2a1f16</code>; Kontrast: <code>#f5e4b5</code>; Tiefe: <code>#3a2e1f</code>).</li>
     <hr class="changelog-divider">
@@ -363,8 +361,6 @@ function attachStarControls(prefix){
   
 /* ---------- renderList ---------- */
 function renderList(list){
-  console.log("renderList wurde aufgerufen:", list?.length, "Einträge");
-
   document.getElementById("whiskyCount").textContent = `${list.length} Whiskys angezeigt`;
   if(!list || !list.length){
     document.getElementById("content").innerHTML="<p class='muted'>Keine passenden Einträge gefunden.</p>";
@@ -375,7 +371,7 @@ function renderList(list){
     const p = w.rating_philipp;
     const avg = ratingAvg(w);
     return `
-    <div class="card" onclick="showDetail(${w.id})" style="cursor:pointer;">
+    <div class="card">
       <div class="row">
         <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
         <div style="flex:1">
@@ -399,9 +395,11 @@ function renderList(list){
             <div>⌀</div>
             <div>${renderStars(avg)} (${avg ? (avg % 1 === 0 ? avg : avg.toFixed(1))+'/10' : '-'})</div>
           </div>
+          <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
     </div>`}).join('');
+  document.querySelectorAll(".viewBtn").forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
 }
 
 /* ---------- Neuer Whisky: gleiche Karte im Edit-Modus ---------- */
@@ -416,7 +414,6 @@ function showAddForm(){
   };
   renderDetailViewForCreate(w, user);
 }
-
 function renderDetailViewForCreate(w, user){ showDetailForNew(w, user); }
 
 async function showDetail(id) {
@@ -426,7 +423,6 @@ async function showDetail(id) {
   const user = localStorage.getItem("whiskydb_user");
   renderDetailView(data, id, user, false);
 }
-
 function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
 /* ---------- Detailanzeige ---------- */
@@ -783,8 +779,6 @@ document.addEventListener("input", (e) => {
     e.target.style.height = (e.target.scrollHeight) + "px";
   }
 });
-
-window.showDetail = showDetail;
 
 </script>
 </html>
