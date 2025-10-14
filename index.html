@@ -372,7 +372,7 @@ function renderList(list){
     const p = w.rating_philipp;
     const avg = ratingAvg(w);
     return `
-    <div class="card" onclick="openDetail(${w.id})" style="cursor:pointer;">
+    <div class="card" onclick="showDetail(${w.id})" style="cursor:pointer;">
       <div class="row">
         <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
         <div style="flex:1">
