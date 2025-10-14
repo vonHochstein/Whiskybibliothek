@@ -204,19 +204,11 @@
   #content.list .card + .card { margin-top:10px; }
   
   /*Trennlinien*/
-  .changelog-divider1 {
+  .changelog-divider {
   height: 1px;
   margin: 18px 0;
   border: none;
   background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
   opacity: 0.8;
   border-radius: 1px;
-}
-
-.changelog-divider2 {
-  height: 1px;
-  margin: 16px 0;
-  border: none;
-  background: linear-gradient(90deg, rgba(212,175,55,0.3), rgba(177,120,40,0.3));
-  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
 }
