@@ -213,17 +213,3 @@
   opacity: 0.8;
   border-radius: 1px;
   }
-
-  /*Listenansicht Karteikarten Reaktion bei Hover*/
-  /* Hover-Effekt NUR in der Listen- oder Rasteransicht aktiv */
-  #content.list .card,
-  #content.grid.listview .card {
-    transition: transform 0.1s ease, box-shadow 0.2s ease;
-  }
-  
-  #content.list .card:hover,
-  #content.grid.listview .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-  }
-
