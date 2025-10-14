@@ -201,6 +201,7 @@
   /* Einheitliche vertikale Startposition und Listenabstand */
   #content.list { padding-top:2px; }
   #content.grid.listview { padding-top:2px; }
+
   #content.list .card + .card { margin-top:10px; }
   
   /*Trennlinien*/
@@ -211,4 +212,14 @@
   background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
   opacity: 0.8;
   border-radius: 1px;
+  }
+
+  /*Listenansicht Karteikarten Reaktion bei Hover*/
+  .card {
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
   }
