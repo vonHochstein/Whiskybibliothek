@@ -413,6 +413,7 @@ function showAddForm(){
   };
   renderDetailViewForCreate(w, user);
 }
+
 function renderDetailViewForCreate(w, user){ showDetailForNew(w, user); }
 
 async function showDetail(id) {
@@ -422,6 +423,9 @@ async function showDetail(id) {
   const user = localStorage.getItem("whiskydb_user");
   renderDetailView(data, id, user, false);
 }
+
+window.showDetail = showDetail;
+
 function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
 /* ---------- Detailanzeige ---------- */
