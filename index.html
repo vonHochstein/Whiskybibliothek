@@ -425,8 +425,6 @@ async function showDetail(id) {
   renderDetailView(data, id, user, false);
 }
 
-window.showDetail = showDetail;
-
 function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
 /* ---------- Detailanzeige ---------- */
@@ -783,6 +781,8 @@ document.addEventListener("input", (e) => {
     e.target.style.height = (e.target.scrollHeight) + "px";
   }
 });
+
+window.showDetail = showDetail;
 
 </script>
 </html>
