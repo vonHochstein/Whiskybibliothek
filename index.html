@@ -371,7 +371,7 @@ function renderList(list){
     const p = w.rating_philipp;
     const avg = ratingAvg(w);
     return `
-    <div class="card">
+    <div class="card" onclick="openDetail(${id})" style="cursor:pointer;">
       <div class="row">
         <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
         <div style="flex:1">
@@ -395,7 +395,6 @@ function renderList(list){
             <div>⌀</div>
             <div>${renderStars(avg)} (${avg ? (avg % 1 === 0 ? avg : avg.toFixed(1))+'/10' : '-'})</div>
           </div>
-          <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
     </div>`}).join('');
