@@ -29,12 +29,12 @@
     <hr class="changelog-divider">
     <li><strong>12.10.2025 21:05 Uhr:</strong> Gesamtes CSS aus der Indexdatei ausgelagert und in <code>style.css</code> überführt. Struktur nun klar getrennt zwischen Layout und Logik, bessere Übersicht und Wartbarkeit.</li>
     <li><strong>12.10.2025 20:47 Uhr:</strong> Fehlerhafte vertikale Ausrichtung der beiden persönlichen Karten behoben → perfekte Symmetrie wiederhergestellt.</li>
-    <li><strong>12.10.2025 20:21 Uhr:</strong> Tabelle <code>whiskies_new_flags</code> fertiggestellt, CSV-Import abgeschlossen (alle Flaggen entfernt, Daten bereinigt).</li>
-    <li><strong>12.10.2025 20:18 Uhr:</strong> Alte Policies aus <code>whiskies</code> auf <code>whiskies_new_flags</code> übertragen; API-Zugriff für <code>anon</code> (SELECT/INSERT/UPDATE/DELETE) wieder aktiviert.</li>
+    <li><strong>12.10.2025 20:21 Uhr:</strong> Tabelle <code>whiskys_new_flags</code> fertiggestellt, CSV-Import abgeschlossen (alle Flaggen entfernt, Daten bereinigt).</li>
+    <li><strong>12.10.2025 20:18 Uhr:</strong> Alte Policies aus <code>whiskys</code> auf <code>whiskys_new_flags</code> übertragen; API-Zugriff für <code>anon</code> (SELECT/INSERT/UPDATE/DELETE) wieder aktiviert.</li>
     <li><strong>12.10.2025 20:12 Uhr:</strong> Fehleranalyse: leere Listenansicht nach Tabellenumbenennung → Ursache waren fehlende Row-Level-Security-Regeln.</li>
     <li><strong>12.10.2025 19:55 Uhr:</strong> Neue Import-Strategie umgesetzt (Backup → Truncate → CSV-Import in bestehende Tabelle); Ergebnis stabil und konsistent.</li>
     <li><strong>12.10.2025 19:15 Uhr:</strong> iOS-Standalone-Fix entfernt (Web-App-Modus endgültig verworfen).</li>
-    <li><strong>12.10.2025 18:45 Uhr:</strong> Datenbankbereinigung abgeschlossen – alle fehlerhaften Flaggeneinträge in <code>whiskies</code> identifiziert und korrigiert; saubere CSV exportiert als Grundlage für Neuimport.</li>
+    <li><strong>12.10.2025 18:45 Uhr:</strong> Datenbankbereinigung abgeschlossen – alle fehlerhaften Flaggeneinträge in <code>whiskys</code> identifiziert und korrigiert; saubere CSV exportiert als Grundlage für Neuimport.</li>
     <li><strong>12.10.2025 18:10 Uhr:</strong> Ursachenanalyse für unterschiedliche Kartenhöhen in der Detailansicht</li>
     <li><strong>12.10.2025 16:50 Uhr:</strong> Testphase zur Eingabe- und Speicherlogik der Notizfelder; verschiedene Varianten (Enter blockieren, Soft-Wrap, automatische Glättung) erprobt.</li>
     <li><strong>12.10.2025 15:30 Uhr:</strong> Code-Revision von <code>renderUserBlock()</code> → Harmonisierung der Edit- und Read-Only-Darstellung.</li>
@@ -68,7 +68,7 @@
     <li><strong>11.10.2025 09:48 Uhr:</strong> Änderungsverzeichnis hinzugefügt.</li>
     <li><strong>11.10.2025 01:20 Uhr:</strong> Beginn der Übertragung persönlicher Bewertungen aus der alten Liste.</li>
     <hr class="changelog-divider">
-    <li><strong>10.10.2025 23:20 Uhr:</strong> Datenbankschema aktualisiert (<code>ALTER TABLE public.whiskies</code>); neue Bestandsfelder angelegt.</li>
+    <li><strong>10.10.2025 23:20 Uhr:</strong> Datenbankschema aktualisiert (<code>ALTER TABLE public.whiskys</code>); neue Bestandsfelder angelegt.</li>
     <li><strong>10.10.2025 23:05 Uhr:</strong> Allgemeines Feld <em>Bestand (%)</em> entfernt; neue individuelle Felder <code>stock_philipp</code> und <code>stock_andreas</code> hinzugefügt.</li>
     <li><strong>10.10.2025 23:00 Uhr:</strong> Individuelle Bestände integriert und getestet.</li>
     <li><strong>10.10.2025 22:45 Uhr:</strong> Bearbeitungsrechte differenziert.</li>
@@ -225,17 +225,17 @@ async function showList(){
   }
 
   document.getElementById("content").innerHTML="<p>Lade Liste …</p>";
-  const {data,error}=await supabase.from("whiskies").select("*").order("created_at",{ascending:false});
+  const {data,error}=await supabase.from("whiskys").select("*").order("created_at",{ascending:false});
   if(error){document.getElementById("content").textContent=error.message;return;}
-  window.allWhiskies = data || [];
-  document.getElementById("whiskyCount").textContent = `${window.allWhiskies.length} Whiskys in der Bibliothek`;
+  window.allwhiskys = data || [];
+  document.getElementById("whiskyCount").textContent = `${window.allwhiskys.length} Whiskys in der Bibliothek`;
   renderList(getFilteredList());
 }
 
 /* ---------- Filter + Sort ---------- */
 function getFilteredList(){
   const q=(document.getElementById("searchInput").value||"").toLowerCase();
-  let list = (window.allWhiskies||[]).filter(w =>
+  let list = (window.allwhiskys||[]).filter(w =>
     !q || Object.values(w).some(val => val && val.toString().toLowerCase().includes(q))
   );
   return applySort(list);
@@ -419,7 +419,7 @@ function renderDetailViewForCreate(w, user){ showDetailForNew(w, user); }
 
 async function showDetail(id) {
   document.getElementById("content").innerHTML = "<p>Lade …</p>";
-  const { data, error } = await supabase.from("whiskies").select("*").eq("id", id).single();
+  const { data, error } = await supabase.from("whiskys").select("*").eq("id", id).single();
   if (error) {document.getElementById("content").textContent = error.message;return;}
   const user = localStorage.getItem("whiskydb_user");
   renderDetailView(data, id, user, false);
@@ -506,7 +506,7 @@ function renderDetailView(w, id, user, editing) {
         updateData.created_by = user;
         updateData.updated_by = user;
         const { data: inserted, error: insErr } = await supabase
-          .from("whiskies")
+          .from("whiskys")
           .insert(updateData)
           .select()
           .single();
@@ -517,15 +517,15 @@ function renderDetailView(w, id, user, editing) {
         if (pendingImageFile) {
           const fileName = `whisky_${newId}_${Date.now()}.jpg`;
           const { error: uploadError } = await supabase.storage
-            .from("whiskies").upload(fileName, pendingImageFile, { contentType: pendingImageFile.type, upsert:true });
+            .from("whiskys").upload(fileName, pendingImageFile, { contentType: pendingImageFile.type, upsert:true });
           if (!uploadError) {
-            const { data: publicURL } = supabase.storage.from("whiskies").getPublicUrl(fileName);
-            await supabase.from("whiskies").update({ image_url: publicURL.publicUrl }).eq("id", newId);
+            const { data: publicURL } = supabase.storage.from("whiskys").getPublicUrl(fileName);
+            await supabase.from("whiskys").update({ image_url: publicURL.publicUrl }).eq("id", newId);
           } else {
             document.getElementById("detailMsg").textContent = "Bild-Upload Fehler: " + uploadError.message;
           }
         }
-        const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", newId).single();
+        const { data: fresh } = await supabase.from("whiskys").select("*").eq("id", newId).single();
         renderDetailView(fresh, newId, user, false);
         return;
 
@@ -533,10 +533,10 @@ function renderDetailView(w, id, user, editing) {
         // UPDATE mit Metadaten
         updateData.updated_by = user;
         updateData.updated_at = new Date().toISOString();
-        const { error } = await supabase.from("whiskies").update(updateData).eq("id", id);
+        const { error } = await supabase.from("whiskys").update(updateData).eq("id", id);
         if (error) { document.getElementById("detailMsg").textContent = "Fehler: " + error.message; }
         else {
-          const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+          const { data: fresh } = await supabase.from("whiskys").select("*").eq("id", id).single();
           renderDetailView(fresh, id, user, false);
         }
       }
@@ -566,14 +566,14 @@ function renderDetailView(w, id, user, editing) {
         imgMsg.textContent = "Lösche Bild …";
         const path = currentUrl.split("/").pop();
       
-        await supabase.storage.from("whiskies").remove([path]).catch(()=>{});
-        await supabase.from("whiskies").update({
+        await supabase.storage.from("whiskys").remove([path]).catch(()=>{});
+        await supabase.from("whiskys").update({
           image_url: null,
           updated_by: user,
           updated_at: new Date().toISOString()
         }).eq("id", id);
       
-        const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+        const { data: fresh } = await supabase.from("whiskys").select("*").eq("id", id).single();
         renderDetailView(fresh, id, user, true);
       };
 
@@ -597,19 +597,19 @@ function renderDetailView(w, id, user, editing) {
         // altes Bild entfernen
         if (w.image_url) {
           const oldPath = w.image_url.split("/").pop();
-          await supabase.storage.from("whiskies").remove([oldPath]).catch(()=>{});
-          await supabase.from("whiskies").update({ image_url: null }).eq("id", id);
+          await supabase.storage.from("whiskys").remove([oldPath]).catch(()=>{});
+          await supabase.from("whiskys").update({ image_url: null }).eq("id", id);
         }
 
         // neues hochladen
         const fileName = `whisky_${id}_${Date.now()}.jpg`;
         const { error: uploadError } = await supabase.storage
-          .from("whiskies").upload(fileName, file, { contentType:file.type, upsert:true });
+          .from("whiskys").upload(fileName, file, { contentType:file.type, upsert:true });
         if (uploadError) { imgMsg.textContent = "Fehler: " + uploadError.message; return; }
 
-        const { data: publicURL } = supabase.storage.from("whiskies").getPublicUrl(fileName);
-        await supabase.from("whiskies").update({ image_url: publicURL.publicUrl, updated_by:user, updated_at:new Date().toISOString() }).eq("id", id);
-        const { data: fresh } = await supabase.from("whiskies").select("*").eq("id", id).single();
+        const { data: publicURL } = supabase.storage.from("whiskys").getPublicUrl(fileName);
+        await supabase.from("whiskys").update({ image_url: publicURL.publicUrl, updated_by:user, updated_at:new Date().toISOString() }).eq("id", id);
+        const { data: fresh } = await supabase.from("whiskys").select("*").eq("id", id).single();
         renderDetailView(fresh, id, user, true);
         imgMsg.textContent = "Bild erfolgreich hochgeladen.";
       };
@@ -645,9 +645,9 @@ function renderDetailView(w, id, user, editing) {
         delMsg.textContent = "Lösche Eintrag …";
         if (w.image_url) {
           const path = w.image_url.split("/").pop();
-          await supabase.storage.from("whiskies").remove([path]).catch(()=>{});
+          await supabase.storage.from("whiskys").remove([path]).catch(()=>{});
         }
-        await supabase.from("whiskies").delete().eq("id", id);
+        await supabase.from("whiskys").delete().eq("id", id);
         delMsg.textContent = "Whisky gelöscht.";
         setTimeout(showList, 1000);
       };
