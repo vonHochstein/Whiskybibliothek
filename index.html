@@ -642,7 +642,7 @@ function renderDetailView(w, id, user, editing) {
                  <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>
                  <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`}
 
-				 <p><strong>Preis-Leistungs-Index:</strong> ${
+				 <p><strong>Preis/Leistung:</strong> ${
 				  w.pli_andreas && w.pli_philipp
 				    ? ((Number(w.pli_andreas) + Number(w.pli_philipp)) / 2).toFixed(2)
 				    : (w.pli_andreas || w.pli_philipp ? (Number(w.pli_andreas || w.pli_philipp).toFixed(2)) : '-')
@@ -968,15 +968,17 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
   const notes  = w[`notes_${prefix}`];
   const wish   = w[`wishlist_${prefix}`];
   const stock  = w[`stock_${prefix}`];
+  const pli    = w[`pli_${prefix}`]; // 🆕 P/L-Wert laden
   const canEditThisCard = editing && (user === "Philipp" || user === ownerName);
 
-    if (!canEditThisCard) {
-      return `
-        <p><strong>Bewertung:</strong> ${renderStars(rating)} (${rating ?? '-'}/10)</p>
-        <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes) : '-'}</p>
-        <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
-        <p><strong>Bestand:</strong> ${stock ?? '-'} %</p>
-      `;
+  if (!canEditThisCard) {
+    return `
+      <p><strong>Bewertung:</strong> ${renderStars(rating)} (${rating ?? '-'}/10)</p>
+      <p class="pli-detail"><strong>P/L-Index:</strong> ${pli ? Number(pli).toFixed(2) : '-'}</p>
+      <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes) : '-'}</p>
+      <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
+      <p><strong>Bestand:</strong> ${stock ?? '-'} %</p>
+    `;
   } else {
     // Sterne erst nach Einfügen ins DOM koppeln
     setTimeout(()=>attachStarControls(prefix), 0);
@@ -985,6 +987,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
         <span id="${prefix}_stars">${renderStars(rating,false)}</span>
         (<input id="${prefix}_rating" type="number" min="1" max="10" value="${rating ?? ''}" style="width:3em;">/10)
       </p>
+      <p class="pli-detail"><strong>P/L-Index:</strong> ${pli ? Number(pli).toFixed(2) : '-'}</p>
       <p>Notizen:<br>
         <textarea id="${prefix}_notes" rows="4"
           style="width:calc(100% - 14px);min-height:80px;resize:vertical;overflow:hidden;
