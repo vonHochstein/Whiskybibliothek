@@ -23,6 +23,10 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>23.10.2025 16:17 Uhr:</strong> Integration eines Dashboards mit aktuell Länderverteilung und Gesamtzahl Whiskys.</li>
+	<li><strong>23.10.2025 13:36 Uhr:</strong> Neue Eingabefelder in der Kartenansicht integriert (Land, Region, Flaggen). Automatische Flaggenzuweisung basierend auf Land und Region.</li>
+	<li><strong>23.10.2025 12:40 Uhr:</strong> Erweiterung um neue Felder <code>country</code>, <code>region</code>, <code>flag_url</code> und <code>region_flag_url</code> in der Datenbank. Automatische Übertragung aus Spalte <em>origin</em>.</li>
+	<hr class="changelog-divider">
     <li><strong>22.10.2025 13:30 Uhr:</strong> Problem Bilduploade behoben.</li>
     <hr class="changelog-divider">
     <li><strong>14.10.2025 22:10 Uhr:</strong> Beendigung Übertrag sämtlicher Daten aus der bisherigen Whisky Liste in die Datenbank</li>
@@ -104,6 +108,7 @@
   <div class="row" style="margin-top:10px">
     <button id="showList">Liste</button>
     <button id="showAdd">Neuer Whisky</button>
+	<button id="showDashboard">Dashboard</button>
     <button id="refresh">Aktualisieren</button>
   </div>
 
@@ -379,7 +384,12 @@ function renderList(list){
         <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
         <div style="flex:1">
           <strong>${w.name||''}</strong> ${w.distillery?("– "+w.distillery):""}<br>
-          <span class="muted">${w.origin||''} ${w.age_years?("• "+w.age_years+" Jahre"):""}</span><br>
+			<span class="muted">
+			  ${w.flag_url ? `<img src="${w.flag_url}" alt="${w.country||''}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ''}
+			  ${w.region && w.region_flag_url ? `<img src="${w.region_flag_url}" alt="${w.region}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ''}
+			  ${w.country || ''}${w.region ? ' – ' + w.region : ''}
+			  ${w.age_years ? ' • ' + w.age_years + ' Jahre' : ''}
+			</span><br>
           <span>${w.volume_ml??'-'} ml | ${w.abv??'-'} % vol</span><br>
           <span>Preis: ${w.price_eur!=null? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur!=null? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
           <div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
@@ -428,6 +438,103 @@ async function showDetail(id) {
 }
 function showDetailForNew(w, user){ renderDetailView(w, null, user, true); }
 
+/* ---------- Dashboard ---------- */
+document.getElementById("showDashboard").onclick = showDashboard;
+
+// ---------- Platzhalter-Flagge (lokal, kein externes Laden nötig) ----------
+const PLACEHOLDER_FLAG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16">
+    <rect x="0.5" y="0.5" width="23" height="15"
+          fill="#f3f3f3" stroke="#d4af37" stroke-width="1"/>
+    <path d="M12 4.2c1.8 0 3 1.1 3 2.6c0 1.9-2 2.2-2 3.1"
+          fill="none" stroke="#8c6239" stroke-width="1.5"
+          stroke-linecap="round"/>
+    <circle cx="12" cy="12.6" r="0.8" fill="#8c6239"/>
+  </svg>
+`);
+
+async function showDashboard() {
+  const content = document.getElementById("content");
+  content.classList.remove("grid", "list", "listview");
+  content.classList.add("list");
+  content.innerHTML = "<p>Lade Dashboard …</p>";
+
+  // Neue Spalten: country, flag_url, age_years
+  const { data, error } = await supabase
+    .from("whiskys")
+    .select("country, flag_url, age_years");
+
+  if (error) {
+    content.textContent = "Fehler: " + error.message;
+    return;
+  }
+
+  // Länderverteilung zählen
+  const counts = {};
+  const flags = {};
+
+  data.forEach(w => {
+    const land = (w.country || "Unbekannt").trim();
+    counts[land] = (counts[land] || 0) + 1;
+    if (w.flag_url && !flags[land]) flags[land] = w.flag_url;
+  });
+
+  // Sortierung nach Anzahl absteigend
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1]); // [ [country, count], ... ]
+  const countries = sorted.map(([c]) => c);
+  const values = sorted.map(([, v]) => v);
+
+  const total = data.length;
+
+  // Dashboard-Grundaufbau
+  content.innerHTML = `
+    <div class="card">
+      <h3>Dashboard</h3><br>
+		<div class="country-summary">
+		  ${countries.map(c => `
+			<div class="country-item">
+			  <img src="${flags[c] || PLACEHOLDER_FLAG}" alt="${c}" class="flag-icon">
+			  <span class="country-name">${c}</span>
+			  <span class="country-count">${counts[c]} Whiskys</span>
+			</div>
+		  `).join("")}
+		</div>
+      <canvas id="countryChart" width="400" height="400"></canvas>
+		<p class="whisky-count">
+		  <strong>Gesamtzahl:</strong>
+		  <span class="whisky-total">${total} Whiskys</span>
+		</p>
+    </div>
+  `;
+
+  // Chart.js laden
+  await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js");
+
+  const chartColors = [
+    "#d4af37", "#b17828", "#c98f38", "#f5e4b5",
+    "#2a1f16", "#3a2e1f", "#8c6239", "#deb887",
+    "#ffd700", "#6b4226"
+  ];
+
+  new Chart(document.getElementById("countryChart"), {
+    type: "pie",
+    data: {
+      labels: countries,
+      datasets: [{
+        data: values,
+        backgroundColor: chartColors.slice(0, countries.length),
+      }],
+    },
+    options: {
+      plugins: {
+        legend: { position: "bottom" },
+        title: { display: true, text: "Länderverteilung" }
+      }
+    }
+  });
+}
+
 /* ---------- Detailanzeige ---------- */
 function renderDetailView(w, id, user, editing) {
   // Sicherstellen, dass Raster-Layout deaktiviert wird
@@ -445,9 +552,23 @@ function renderDetailView(w, id, user, editing) {
         </div>
           <div style="flex:1">
             ${editing
-              ? `<input id="name" value="${w.name || ""}" placeholder="Whisky"><br>
-                 <input id="distillery" value="${w.distillery || ""}" placeholder="Brennerei"><br>
-                 <input id="origin" value="${w.origin || ""}" placeholder="Herkunft"><br>
+              ? `<input id="name" type="text" value="${w.name || ""}" placeholder="Whisky"><br>
+                 <input id="distillery" type="text" value="${w.distillery || ""}" placeholder="Brennerei"><br>
+					<select id="country" placeholder="Land wählen..." style="margin-bottom:4px;">
+					  <option value="">Land wählen …</option>
+					  <option value="Deutschland">Deutschland</option>
+					  <option value="Schottland">Schottland</option>
+					  <option value="Irland">Irland</option>
+					  <option value="Nordirland">Nordirland</option>
+					  <option value="USA">USA</option>
+					  <option value="Japan">Japan</option>
+					  <option value="Australien">Australien</option>
+					  <option value="Kanada">Kanada</option>
+					</select><br>
+
+					<input id="region" type="text" value="${w.region || ""}" placeholder="Region (z. B. Highlands, Sachsen …)"><br>
+					<input id="flag_url" type="url" value="${w.flag_url || ""}" placeholder="Flaggen-URL (wird meist automatisch gesetzt)"><br>
+					<input id="region_flag_url" type="url" value="${w.region_flag_url || ""}" placeholder="Region-Flaggen-URL (automatisch gesetzt)"><br>
                  <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
                  <input id="volume_ml" type="number" value="${w.volume_ml || ""}" placeholder="Volumen (ml)"><br>
                  <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
@@ -457,7 +578,13 @@ function renderDetailView(w, id, user, editing) {
                  <p id="imgMsg" class="muted"></p>
                  <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`
               : `<h3>${escapeHtml(w.name)}</h3>
-                 <p class="muted">${w.distillery || ""} ${w.origin ? "• " + w.origin : ""}</p>
+					<p class="muted">
+					  ${w.distillery || ""}
+					  ${w.country || w.region ? " • " : ""}
+					  ${w.flag_url ? `<img src="${w.flag_url}" alt="${w.country||''}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ""}
+					  ${w.region && w.region_flag_url ? `<img src="${w.region_flag_url}" alt="${w.region}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ""}
+					  ${w.country || ""}${w.region ? " – " + w.region : ""}
+					</p>
                  <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
                  <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>
                  <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`}
@@ -655,7 +782,99 @@ function renderDetailView(w, id, user, editing) {
       };
     }
   }
+
+  /* ---------- Flaggen automatisch setzen ---------- */
+  setTimeout(() => {
+    const cSel   = document.getElementById("country");
+    const fInput = document.getElementById("flag_url");
+    if (cSel && fInput) {
+      const base = "https://commons.wikimedia.org/wiki/Special:FilePath/";
+      const map = {
+        "Deutschland": "Flag_of_Germany.svg",
+        "Schottland":  "Flag_of_the_United_Kingdom.svg",
+		"Nordirland":  "Flag_of_the_United_Kingdom.svg",
+        "Irland":      "Flag_of_Ireland.svg",
+        "USA":         "Flag_of_the_United_States.svg",
+        "Japan":       "Flag_of_Japan.svg",
+        "Australien":  "Flag_of_Australia.svg",
+        "Kanada":      "Flag_of_Canada_(Pantone).svg"
+      };
+
+      // vorhandene Werte übernehmen
+      if (w.country) cSel.value = w.country;
+
+      // wenn keine Flagge gesetzt ist, aber ein Land vorhanden → automatisch setzen
+      if ((!w.flag_url || w.flag_url === "") && map[cSel.value]) {
+        fInput.value = base + map[cSel.value];
+      }
+
+      // on change automatisch nachziehen
+      cSel.addEventListener("change", () => {
+        fInput.value = map[cSel.value] ? base + map[cSel.value] : "";
+      });
+    }
+  }, 0);
+
+/* ---------- Region-Flagge automatisch setzen ---------- */
+setTimeout(() => {
+  const rInput = document.getElementById("region");
+  const rfInput = document.getElementById("region_flag_url");
+  if (rInput && rfInput) {
+    const base = "https://commons.wikimedia.org/wiki/Special:FilePath/";
+    const map = {
+      // Deutschland
+      "Sachsen": "Flag_of_Saxony.svg",
+      "Sachsen-Anhalt": "Flag_of_Saxony-Anhalt.svg",
+      "Bayern": "Flag_of_Bavaria_(lozengy).svg",
+      "Baden": "Flag_of_Baden-W%C3%BCrttemberg.svg",
+      "Württemberg": "Flag_of_Baden-W%C3%BCrttemberg.svg",
+      "Pfalz": "Flag_of_Rhineland-Palatinate.svg",
+      "Rheinland": "Flag_of_Rhineland-Palatinate.svg",
+      "Niedersachsen": "Flag_of_Lower_Saxony.svg",
+      "Thüringen": "Flag_of_Thuringia.svg",
+      "Brandenburg": "Flag_of_Brandenburg.svg",
+      "Nordrhein": "Flag_of_North_Rhine-Westphalia.svg",
+      "Westfalen": "Flag_of_North_Rhine-Westphalia.svg",
+      "Saarland": "Flag_of_Saarland.svg",
+      "Mecklenburg": "Flag_of_Mecklenburg-Western_Pomerania.svg",
+      "Holstein": "Flag_of_Schleswig-Holstein.svg",
+      "Hamburg": "Flag_of_Hamburg.svg",
+      "Berlin": "Flag_of_Berlin.svg",
+      "Bremen": "Flag_of_Bremen.svg",
+
+      // Schottland / Whiskyregionen
+      "Highlands": "Flag_of_Scotland.svg",
+      "Speyside": "Flag_of_Scotland.svg",
+      "Lowlands": "Flag_of_Scotland.svg",
+      "Islay": "Flag_of_Scotland.svg",
+      "Islands": "Flag_of_Scotland.svg",
+      "Campbeltown": "Flag_of_Scotland.svg",
+	  
+	  // Nordirland / County
+      "Antrim": "Flag_of_Northern_Ireland.svg",
+
+      // USA / Kanada
+      "Kentucky": "Flag_of_the_United_States.svg",
+      "Manitoba": "Flag_of_Canada_(Pantone).svg"
+    };
+
+    const applyRegionFlag = () => {
+      const txt = rInput.value.trim();
+      const key = Object.keys(map).find(k => txt.toLowerCase().includes(k.toLowerCase()));
+      rfInput.value = key ? base + map[key] : "";
+    };
+
+    // initial setzen, falls leer
+    if ((!w.region_flag_url || w.region_flag_url === "") && w.region) applyRegionFlag();
+
+    // live reagieren, sobald jemand tippt oder verlässt
+    rInput.addEventListener("input", applyRegionFlag);
+    rInput.addEventListener("change", applyRegionFlag);
+  }
+}, 0);
+
 }
+
 
 /* --------- Karte-Render-Helfer --------- */
 function metaLine(w){
@@ -717,9 +936,12 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
  */
 function collectUpdates(w, user, editing){
   const upd = {};
-  ["name","distillery","origin","age_years","volume_ml","price_eur","abv"].forEach(f=>{
-    const el=document.getElementById(f);
-    if(el) upd[f] = el.value === "" ? null : (isNaN(el.value)? el.value : parseFloat(el.value));
+  // alle relevanten Felder einsammeln (inkl. neue)
+  ["name","distillery","country","region","flag_url","region_flag_url","age_years","volume_ml","price_eur","abv"].forEach(f=>{
+    const el = document.getElementById(f);
+    if (el) {
+      upd[f] = el.value === "" ? null : (isNaN(el.value) ? el.value : parseFloat(el.value));
+    }
   });
 
   const readCard = (who) => ({
@@ -750,6 +972,7 @@ function collectUpdates(w, user, editing){
   }
   return upd;
 }
+
 
 /* Utils */
 function numVal(id){
