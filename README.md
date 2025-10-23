@@ -1,10 +1,6 @@
-Zurück auf Commit 123
-
 # Whiskybibliothek
 
 Ideen
-- Filter rund Suchfunktionen
-  - Dropdown Filter
 - Dashboard Statistik
   - Gesamtzahl
   - Durchschnittspreis
