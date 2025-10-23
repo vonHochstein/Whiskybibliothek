@@ -23,6 +23,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+	<li><strong>23.10.2025 19:52 Uhr:</strong> Ergänzung eines Preis-Leistungs-Index Wertes (PLI).</li>  
 	<li><strong>23.10.2025 19:52 Uhr:</strong> Vollständige Aktualisierung aller Länder, Regionen und Flaggen.</li>  
     <li><strong>23.10.2025 16:17 Uhr:</strong> Integration eines Dashboards mit aktuell Länderverteilung und Gesamtzahl Whiskys.</li>
 	<li><strong>23.10.2025 13:36 Uhr:</strong> Neue Eingabefelder in der Kartenansicht integriert (Land, Region, Flaggen). Automatische Flaggenzuweisung basierend auf Land und Region.</li>
@@ -409,6 +410,34 @@ function renderList(list){
             <div>⌀</div>
             <div>${renderStars(avg)} (${avg ? (avg % 1 === 0 ? avg : avg.toFixed(1))+'/10' : '-'})</div>
           </div>
+
+			<div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
+			  <div style="font-size:0.85em; line-height:1;">
+				<span style="vertical-align:super; font-size:0.75em;">A</span>
+				<span style="vertical-align:sub; font-size:0.75em;">J</span>
+			  </div>
+			  <div class="pli-block">
+				${w.pli_andreas ? `${Number(w.pli_andreas).toFixed(2)}` : '-'}
+			  </div>
+			
+			  <div style="font-size:0.85em; line-height:1;">
+				<span style="vertical-align:super; font-size:0.75em;">P</span>
+				<span style="vertical-align:sub; font-size:0.75em;">H</span>
+			  </div>
+			  <div class="pli-block">
+				${w.pli_philipp ? `${Number(w.pli_philipp).toFixed(2)}` : '-'}
+			  </div>
+			
+			  <div>⌀</div>
+			  <div class="pli-block">
+				${
+				  w.pli_andreas && w.pli_philipp
+					? ((Number(w.pli_andreas) + Number(w.pli_philipp)) / 2).toFixed(2)
+					: '-'
+				}
+			  </div>
+			</div>
+		  
           <button data-id="${w.id}" class="viewBtn">Ansehen</button>
         </div>
       </div>
