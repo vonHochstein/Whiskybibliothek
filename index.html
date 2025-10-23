@@ -394,7 +394,10 @@ function renderList(list){
 			</span><br>
           <span>${w.volume_ml??'-'} ml | ${w.abv??'-'} % vol</span><br>
           <span>Preis: ${w.price_eur!=null? (Number(w.price_eur).toFixed(2)+' €'):''} ${w.price_per_liter_eur!=null? ('('+Number(w.price_per_liter_eur).toFixed(2)+' €/L)'):''}</span><br>
-          <div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
+
+		  <hr class="block-divider">
+		  
+		  <div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
             <div style="font-size:0.85em; line-height:1;">
               <span style="vertical-align:super; font-size:0.75em;">A</span>
               <span style="vertical-align:sub; font-size:0.75em;">J</span>
@@ -410,6 +413,8 @@ function renderList(list){
             <div>⌀</div>
             <div>${renderStars(avg)} (${avg ? (avg % 1 === 0 ? avg : avg.toFixed(1))+'/10' : '-'})</div>
           </div>
+
+			<hr class="block-divider">
 
 			<div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
 			  <div style="font-size:0.85em; line-height:1;">
