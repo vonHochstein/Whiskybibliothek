@@ -338,3 +338,10 @@
   max-width: 800px;   /* feste Obergrenze Desktop */
   max-height: 800px;  /* feste Obergrenze Desktop */
 }
+
+.pli-block {
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
