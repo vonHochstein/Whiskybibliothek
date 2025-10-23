@@ -491,6 +491,10 @@ async function showDashboard() {
   content.innerHTML = `
     <div class="card">
       <h3>Dashboard</h3><br>
+		<p class="whisky-count">
+		  <strong>Gesamtzahl:</strong>
+		  <span class="whisky-total">${total} Whiskys</span>
+		</p>
 		<div class="country-summary">
 		  ${countries.map(c => `
 			<div class="country-item">
@@ -501,10 +505,6 @@ async function showDashboard() {
 		  `).join("")}
 		</div>
       <canvas id="countryChart" width="400" height="400"></canvas>
-		<p class="whisky-count">
-		  <strong>Gesamtzahl:</strong>
-		  <span class="whisky-total">${total} Whiskys</span>
-		</p>
     </div>
   `;
 
