@@ -128,9 +128,12 @@
         <option value="updated_desc">Änderungsdatum (neu → alt)</option>
         <option value="created_desc">Erstelldatum (neu → alt)</option>
         <option value="rating_avg_desc">Bewertung Ø (hoch → niedrig)</option>
-        <option value="rating_philipp_desc">Bewertung Philipp (hoch → niedrig)</option>
         <option value="rating_andreas_desc">Bewertung Andreas (hoch → niedrig)</option>
+        <option value="rating_philipp_desc">Bewertung Philipp (hoch → niedrig)</option>
         <option value="name_asc">Name (A → Z)</option>
+ 		<option value="pli_avg_desc">PLI Ø (hoch → niedrig)</option>
+		<option value="pli_andreas_desc">PLI Andreas (hoch → niedrig)</option>
+		<option value="pli_philipp_desc">PLI Philipp (hoch → niedrig)</option>
       </select>
     </div>
   </div>
@@ -274,18 +277,33 @@ function applySort(list){
     return ax.localeCompare(bx,"de");
   };
 
-  switch(v){
-    case "updated_desc": arr.sort((a,b)=>{
-      // fallback: wenn updated_at fehlt, nimm created_at
-      const aKey=a.updated_at||a.created_at, bKey=b.updated_at||b.created_at;
-      return new Date(bKey||0)-new Date(aKey||0);
-    }); break;
-    case "created_desc": arr.sort((a,b)=>byDate(a,b,"created_at")); break;
-    case "rating_avg_desc": arr.sort((a,b)=>byNumDesc(a,b,ratingAvg)); break;
-    case "rating_philipp_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.rating_philipp))); break;
-    case "rating_andreas_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.rating_andreas))); break;
-    case "name_asc": arr.sort((a,b)=>byStrAsc(a,b,"name")); break;
-  }
+	switch(v){
+	  case "updated_desc": arr.sort((a,b)=>{
+	    // fallback: wenn updated_at fehlt, nimm created_at
+	    const aKey=a.updated_at||a.created_at, bKey=b.updated_at||b.created_at;
+	    return new Date(bKey||0)-new Date(aKey||0);
+	  }); break;
+	
+	  case "created_desc": arr.sort((a,b)=>byDate(a,b,"created_at")); break;
+	
+	  case "rating_avg_desc": arr.sort((a,b)=>byNumDesc(a,b,ratingAvg)); break;
+	  case "rating_philipp_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.rating_philipp))); break;
+	  case "rating_andreas_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.rating_andreas))); break;
+	
+	  // 🆕 Preis-Leistungs-Index (PLI)
+	  case "pli_andreas_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.pli_andreas))); break;
+	  case "pli_philipp_desc": arr.sort((a,b)=>byNumDesc(a,b,(x)=>parseFloat(x.pli_philipp))); break;
+	  case "pli_avg_desc":
+	    arr.sort((a,b)=>{
+	      const avgA = ((a.pli_andreas||0)+(a.pli_philipp||0))/((a.pli_andreas && a.pli_philipp)?2:1);
+	      const avgB = ((b.pli_andreas||0)+(b.pli_philipp||0))/((b.pli_andreas && b.pli_philipp)?2:1);
+	      return avgB - avgA;
+	    });
+	  break;
+	
+	  case "name_asc": arr.sort((a,b)=>byStrAsc(a,b,"name")); break;
+	}
+
   return arr;
 }
 
