@@ -351,5 +351,17 @@
   margin: 6px 0 !important;
 }
 
+.pli-detail {
+  color: #d4af37 !important;
+  font-weight: 600 !important;
+  margin-top: 6px;
+}
+
+.pli-detail strong {
+  color: var(--text);
+  font-weight: 500;
+  margin-right: 4px;
+}
+
 
 
