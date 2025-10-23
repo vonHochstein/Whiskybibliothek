@@ -417,29 +417,29 @@ function renderList(list){
 			<hr class="block-divider">
 
 			<div style="margin-top:6px; display:grid; grid-template-columns:2.2em auto; row-gap:2px; align-items:center;">
-			  <div style="font-size:0.85em; line-height:1;">
+			  <div style="font-size:0.85em; line-height:1;"> PLI
 				<span style="vertical-align:super; font-size:0.75em;">A</span>
 				<span style="vertical-align:sub; font-size:0.75em;">J</span>
 			  </div>
 			  <div class="pli-block">
-				${w.pli_andreas ? `${Number(w.pli_andreas).toFixed(2)} PLI` : '-'}
+				${w.pli_andreas ? `${Number(w.pli_andreas).toFixed(2)}` : '-'}
 			  </div>
 			
-			  <div style="font-size:0.85em; line-height:1;">
+			  <div style="font-size:0.85em; line-height:1;">PLI
 				<span style="vertical-align:super; font-size:0.75em;">P</span>
 				<span style="vertical-align:sub; font-size:0.75em;">H</span>
 			  </div>
 			  <div class="pli-block">
-				${w.pli_philipp ? `${Number(w.pli_philipp).toFixed(2)} PLI` : '-'}
+				${w.pli_philipp ? `${Number(w.pli_philipp).toFixed(2)}` : '-'}
 			  </div>
 			
 			  <div>⌀</div>
-			  <div class="pli-block">
+			  <div class="pli-block">PLI
 				${
 				  w.pli_andreas && w.pli_philipp
 					? ((Number(w.pli_andreas) + Number(w.pli_philipp)) / 2).toFixed(2)
 					: '-'
-				} PLI
+				}
 			  </div>
 			</div>
 		  
