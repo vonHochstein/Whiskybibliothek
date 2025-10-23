@@ -345,3 +345,9 @@
   font-size: 0.9rem;
 }
 
+.block-divider {
+  border: none;
+  border-top: 1px solid rgba(212, 175, 55, 0.3); /* Gold Edition, leicht transparent */
+  margin: 6px 0;
+}
+
