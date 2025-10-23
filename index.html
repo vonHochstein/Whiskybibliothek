@@ -641,19 +641,29 @@ function renderDetailView(w, id, user, editing) {
                  <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
                  <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>
                  <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`}
+
+				 <p><strong>Preis-Leistungs-Index Ø:</strong> ${
+				  w.pli_andreas && w.pli_philipp
+				    ? ((Number(w.pli_andreas) + Number(w.pli_philipp)) / 2).toFixed(2)
+				    : (w.pli_andreas || w.pli_philipp ? (Number(w.pli_andreas || w.pli_philipp).toFixed(2)) : '-')
+				 }</p>
+
           </div>
       </div>
 
       <!-- Zwei Karten für Philipp / Andreas -->
       <div class="two-col">
-      <div class="card personal">
-          <h4>Philipp</h4>
-          ${renderUserBlock("philipp", user, w, editing, "Philipp")}
-      </div>
-      <div class="card personal">
-          <h4>Andreas</h4>
-          ${renderUserBlock("andreas", user, w, editing, "Andreas")}
-      </div>
+		<div class="card personal">
+		  <h4>Philipp</h4>
+		  ${renderUserBlock("philipp", user, w, editing, "Philipp")}
+		  <p class="pli-detail"><strong>P/L-Index:</strong> ${w.pli_philipp ? Number(w.pli_philipp).toFixed(2) : '-'}</p>
+		</div>
+		
+		<div class="card personal">
+		  <h4>Andreas</h4>
+		  ${renderUserBlock("andreas", user, w, editing, "Andreas")}
+		  <p class="pli-detail"><strong>P/L-Index:</strong> ${w.pli_andreas ? Number(w.pli_andreas).toFixed(2) : '-'}</p>
+		</div>
       </div>
 
       <!-- Metadaten -->
