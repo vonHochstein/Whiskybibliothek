@@ -340,14 +340,15 @@
 }
 
 .pli-block {
-  color: #d4af37;
-  font-weight: 600;
-  font-size: 0.9rem;
+  color: #d4af37 !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
 }
 
 .block-divider {
   border: none;
-  border-top: 1px solid rgba(212, 175, 55, 0.3); /* Gold Edition, leicht transparent */
-  margin: 6px 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.3) !important; /* Gold Edition, leicht transparent */
+  margin: 6px 0 !important;
 }
+
 
