@@ -346,9 +346,10 @@
 }
 
 .block-divider {
-  border: none;
+  border: none !important;
   border-top: 1px solid rgba(212, 175, 55, 0.3) !important; /* Gold Edition, leicht transparent */
   margin: 6px 0 !important;
 }
+
 
 
