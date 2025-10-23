@@ -974,7 +974,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
   if (!canEditThisCard) {
     return `
       <p><strong>Bewertung:</strong> ${renderStars(rating)} (${rating ?? '-'}/10)</p>
-      <p class="pli-detail"><strong>P/L-Index:</strong> ${pli ? Number(pli).toFixed(2) : '-'}</p>
+      <p><strong>P/L-Index:</strong> ${pli ? Number(pli).toFixed(2) : '-'}</p>
       <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes) : '-'}</p>
       <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
       <p><strong>Bestand:</strong> ${stock ?? '-'} %</p>
