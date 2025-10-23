@@ -213,3 +213,128 @@
   opacity: 0.8;
   border-radius: 1px;
   }
+  
+  /* ---------- Einheitliche Eingabefelder in Karten ---------- */
+.card input[type="text"],
+.card input[type="number"],
+.card input[type="file"],
+.card input[type="email"],
+.card input[type="password"],
+.card input[type="url"],
+.card select,
+.card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background-color: var(--input-bg);
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.card input:focus,
+.card select:focus,
+.card textarea:focus {
+  border-color: #b17828;
+  box-shadow: 0 0 3px rgba(177,120,40,0.4);
+  outline: none;
+}
+
+.card select {
+  appearance: none;
+  background-color: var(--input-bg);
+  height: 34px;
+}
+
+.card input[type="file"] {
+  padding: 4px;
+  border: none;
+  background-color: transparent;
+}
+
+.card button {
+  margin-top: 8px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* ---------- Toolbar-/Filter-Bereich wiederherstellen ---------- */
+.toolbar,
+.search-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar label,
+.search-sort label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.toolbar input[type="text"],
+.toolbar select,
+.search-sort input[type="text"],
+.search-sort select {
+  width: auto;                /* nicht 100% */
+  min-width: 140px;
+  box-sizing: border-box;
+  display: inline-block;       /* wieder in einer Zeile */
+}
+
+/* ---------- Formatierung Dashboard ---------- */
+
+.country-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.country-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flag-icon {
+  width: 24px;
+  height: 16px;
+  object-fit: cover;
+  border: 1px solid #444;
+  border-radius: 2px;
+}
+.country-name {
+  flex: 1;
+}
+.country-count {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.whisky-count {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 10px;
+}
+
+.whisky-total {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+#countryChart {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  height: auto;
+  max-width: 800px;   /* feste Obergrenze Desktop */
+  max-height: 800px;  /* feste Obergrenze Desktop */
+}
