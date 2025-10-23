@@ -422,7 +422,7 @@ function renderList(list){
 				<span style="vertical-align:sub; font-size:0.75em;">J</span>
 			  </div>
 			  <div class="pli-block">
-				${w.pli_andreas ? `${Number(w.pli_andreas).toFixed(2)}` : '-'}
+				${w.pli_andreas ? `${Number(w.pli_andreas).toFixed(2)} PLI` : '-'}
 			  </div>
 			
 			  <div style="font-size:0.85em; line-height:1;">
@@ -430,7 +430,7 @@ function renderList(list){
 				<span style="vertical-align:sub; font-size:0.75em;">H</span>
 			  </div>
 			  <div class="pli-block">
-				${w.pli_philipp ? `${Number(w.pli_philipp).toFixed(2)}` : '-'}
+				${w.pli_philipp ? `${Number(w.pli_philipp).toFixed(2)} PLI` : '-'}
 			  </div>
 			
 			  <div>⌀</div>
@@ -439,7 +439,7 @@ function renderList(list){
 				  w.pli_andreas && w.pli_philipp
 					? ((Number(w.pli_andreas) + Number(w.pli_philipp)) / 2).toFixed(2)
 					: '-'
-				}
+				} PLI
 			  </div>
 			</div>
 		  
