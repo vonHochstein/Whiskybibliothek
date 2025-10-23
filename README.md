@@ -2,7 +2,6 @@
 
 Ideen
 - Dashboard Statistik
-  - Gesamtzahl
   - Durchschnittspreis
   - Durchschnittliche Bewertung
   - Anzahl offene Kaufwünsche
