@@ -413,3 +413,10 @@ canvas[id^="donut_"] {
   text-shadow: 0 0 2px rgba(0,0,0,.4);
   pointer-events: none;
 }
+
+h5 {
+  color: var(--accent, #d4af37);
+  margin-top: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+}
