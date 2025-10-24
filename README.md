@@ -1,8 +1,6 @@
 # Whiskybibliothek
 
 Ideen
-- Erweiterte Funktionen
-  - Preis/Leistungsindex
 - Kompfortfunktionen
   - farbliche Hinterlegung bei geringem Bestand
 
