@@ -375,14 +375,14 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 4px rgba(0,0,0,0.3);
-  color: white;                /* Standard: weiß */
-  text-shadow: 0 0 2px rgba(0,0,0,0.4); /* leichte Kontur */
+  color: #111;                
+  text-shadow: 0 0 3px rgba(255,255,255,0.5);
 }
 
 canvas[id^="donut_"] {
