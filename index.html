@@ -23,6 +23,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+	<li><strong>24.10.2025 12:54 Uhr:</strong> Erweiterung der Detailansicht um individuellen <em>Tasting-Block</em> (Felder: Farbe, Geruch, Geschmack, Abgang, Gesamteindruck). Anpassung der Speichern- und Darstellungslogik inkl. einheitlichem Zeilenumbruch.</li>
 	<li><strong>24.10.2025 11:47 Uhr:</strong> Integration Bestandsanzeige in der Listenansicht (farbige Punkte) sowie Detailansicht (Diagramme).</li>
     <li><strong>24.10.2025 10:30 Uhr:</strong> Umstellung Bestände von % auf ml Werte.</li>
     <hr class="changelog-divider">
@@ -1070,6 +1071,14 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
       <p><strong>Bewertung:</strong> ${renderStars(rating)} (${rating ?? '-'}/10)</p>
       <p><strong>Preis/Leistung:</strong> ${pli ? Number(pli).toFixed(2) : '-'}</p>
       <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes) : '-'}</p>
+	  <hr class="block-divider">
+	  <h5 style="margin-bottom:4px">Tasting</h5>
+	  <p><strong>Farbe:</strong><br>${escapeHtml(w[`t_color_${prefix}`]) || '-'}</p>
+	  <p><strong>Geruch:</strong><br>${escapeHtml(w[`t_nose_${prefix}`]) || '-'}</p>
+	  <p><strong>Geschmack:</strong><br>${escapeHtml(w[`t_palate_${prefix}`]) || '-'}</p>
+	  <p><strong>Abgang:</strong><br>${escapeHtml(w[`t_finish_${prefix}`]) || '-'}</p>
+	  <p><strong>Gesamteindruck:</strong><br>${escapeHtml(w[`t_summary_${prefix}`]) || '-'}</p>
+	  <hr class="block-divider">
       <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
       <p><strong>Bestand:</strong> ${stock ?? '-'} ml</p>
 	  
@@ -1095,6 +1104,26 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
                 margin-left:2px;white-space:pre-wrap;word-wrap:break-word;"
           onkeydown="return event.key !== 'Enter';">${notes ?? ""}</textarea>
       </p>
+	  
+	  <hr class="block-divider">
+      <h5 style="margin-bottom:4px">Tasting</h5>
+      <p>Farbe:<br>
+        <input id="${prefix}_t_color" type="text" value="${w[`t_color_${prefix}`] || ''}" style="width:100%">
+      </p>
+      <p>Geruch:<br>
+        <textarea id="${prefix}_t_nose" rows="2" style="width:100%">${w[`t_nose_${prefix}`] || ''}</textarea>
+      </p>
+      <p>Geschmack:<br>
+        <textarea id="${prefix}_t_palate" rows="2" style="width:100%">${w[`t_palate_${prefix}`] || ''}</textarea>
+      </p>
+      <p>Abgang:<br>
+        <textarea id="${prefix}_t_finish" rows="2" style="width:100%">${w[`t_finish_${prefix}`] || ''}</textarea>
+      </p>
+      <p>Gesamteindruck:<br>
+        <textarea id="${prefix}_t_summary" rows="3" style="width:100%">${w[`t_summary_${prefix}`] || ''}</textarea>
+      </p>
+	  <hr class="block-divider">
+	  
       <p><label><input id="${prefix}_wishlist" type="checkbox" ${wish ? "checked" : ""}> Kaufwunsch</label></p>
       <p>Bestand: <input id="${prefix}_stock" type="number" step="0.1" value="${stock ?? ""}"> ml</p>
     `;
@@ -1116,12 +1145,19 @@ function collectUpdates(w, user, editing){
     }
   });
 
-  const readCard = (who) => ({
-    rating : numVal(`${who}_rating`),
-    notes  : textVal(`${who}_notes`),
-    wish   : boolVal(`${who}_wishlist`),
-    stock  : numVal(`${who}_stock`)
-  });
+	const readCard = (who) => ({
+	  rating : numVal(`${who}_rating`),
+	  notes  : textVal(`${who}_notes`),
+	  wish   : boolVal(`${who}_wishlist`),
+	  stock  : numVal(`${who}_stock`),
+
+	  // 🥃 Tasting-Felder
+	  t_color   : textVal(`${who}_t_color`),
+	  t_nose    : textVal(`${who}_t_nose`),
+	  t_palate  : textVal(`${who}_t_palate`),
+	  t_finish  : textVal(`${who}_t_finish`),
+	  t_summary : textVal(`${who}_t_summary`)
+	});
 
   if (user === "Philipp") {
     const p = readCard("philipp");
@@ -1135,12 +1171,32 @@ function collectUpdates(w, user, editing){
     if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
     if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
     if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+	
+	if (p.t_color   !== undefined) upd.t_color_philipp   = p.t_color;
+    if (p.t_nose    !== undefined) upd.t_nose_philipp    = p.t_nose;
+    if (p.t_palate  !== undefined) upd.t_palate_philipp  = p.t_palate;
+    if (p.t_finish  !== undefined) upd.t_finish_philipp  = p.t_finish;
+    if (p.t_summary !== undefined) upd.t_summary_philipp = p.t_summary;
+
+    if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
+    if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
+    if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
+    if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
+    if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+
   } else if (user === "Andreas") {
     const a = readCard("andreas");
     if (a.rating !== undefined)  upd.rating_andreas = a.rating;
     if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
     if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
     if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+	
+	if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
+    if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
+    if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
+    if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
+    if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+
   }
   return upd;
 }
