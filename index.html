@@ -391,6 +391,23 @@ function attachStarControls(prefix){
   // NEU: initialen Wert visualisieren
   updateStars(prefix, Number(input?.value));
 }
+
+/* ---------- Stock Punkte Farben ---------- */
+function getStockColor(stock_ml, volume_ml) {
+  const vol = Number(volume_ml);
+  const stk = Number(stock_ml);
+
+  if (!vol || vol <= 0 || isNaN(vol) || isNaN(stk)) return 'gray';
+
+  const percent = (stk / vol) * 100;
+
+  if (percent >= 90) return 'green';         // 90–100%
+  if (percent >= 75) return 'yellowgreen';   // 75–<90%
+  if (percent >= 25) return 'yellow';        // 25–<75%
+  if (percent >= 25) return 'yellow';        // 25–<75%
+  if (percent >= 10) return 'orange';        // 10–<25%
+  return 'red';                               // <10%
+}
   
 /* ---------- renderList ---------- */
 function renderList(list){
@@ -406,7 +423,23 @@ function renderList(list){
     return `
     <div class="card">
       <div class="row">
-        <div style="flex:0 0 120px"><img loading="lazy" src="${w.image_url||'https://via.placeholder.com/120x150?text=No+Image'}" class="thumb"></div>
+        <div style="flex:0 0 120px; text-align:center;">
+		  <img loading="lazy"
+			   src="${w.image_url || 'https://via.placeholder.com/120x150?text=No+Image'}"
+			   class="thumb">
+		  <div class="stock-dots">
+			<span class="stock-dot"
+				  style="background-color:${getStockColor(w.stock_philipp, w.volume_ml)}"
+				  title="Philipp – ${Math.round((w.stock_philipp / w.volume_ml) * 100)} %">
+			  P
+			</span>
+			<span class="stock-dot"
+				  style="background-color:${getStockColor(w.stock_andreas, w.volume_ml)}"
+				  title="Andreas – ${Math.round((w.stock_andreas / w.volume_ml) * 100)} %">
+			  A
+			</span>
+		  </div>
+		</div>
         <div style="flex:1">
           <strong>${w.name||''}</strong> ${w.distillery?("– "+w.distillery):""}<br>
 			<span class="muted">
@@ -594,13 +627,18 @@ async function showDashboard() {
 }
 
 /* ---------- Detailanzeige ---------- */
-function renderDetailView(w, id, user, editing) {
+async function renderDetailView(w, id, user, editing) {
   // Sicherstellen, dass Raster-Layout deaktiviert wird
   const content = document.getElementById("content");
   content.classList.remove("grid", "list", "listview");
   content.classList.add("list"); // Detailansicht = klassische Einspalten-Darstellung
 
   let pendingImageFile = null; // für NEU vorm INSERT
+  
+  // Chart.js bei Bedarf nachladen (für Donut-Anzeigen)
+  if (typeof Chart === "undefined") {
+    await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js");
+  }
 
   document.getElementById("content").innerHTML = `
     <div class="card">
@@ -680,6 +718,17 @@ function renderDetailView(w, id, user, editing) {
       </div>
       <p id="detailMsg" class="muted"></p>
     </div>`;
+
+// Donuts NACH dem Einfügen ins DOM initialisieren:
+setTimeout(() => {
+  try {
+    renderStockDonut("donut_philipp", Number(w.stock_philipp) || 0, Number(w.volume_ml) || 0);
+    renderStockDonut("donut_andreas", Number(w.stock_andreas) || 0, Number(w.volume_ml) || 0);
+  } catch (e) {
+    console.warn("Donut-Init fehlgeschlagen:", e);
+  }
+}, 0);
+
 
   document.getElementById("back")?.addEventListener("click", showList);
 
@@ -964,6 +1013,46 @@ function metaLine(w){
   return out || "";
 }
 
+/* --------- Bestand Donuts --------- */
+function renderStockDonut(canvasId, stock_ml, volume_ml) {
+  const vol = Number(volume_ml);
+  const stk = Number(stock_ml);
+  const el  = document.getElementById(canvasId);
+  if (!el) return;
+
+  if (!vol || vol <= 0 || isNaN(vol)) {
+    // Kein Volumen: grauer Vollring
+    new Chart(el, {
+      type: "doughnut",
+      data: { datasets: [{ data: [100, 0], backgroundColor: ["#555", "#333"], borderWidth: 0 }] },
+      options: { cutout: "70%", plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+    return;
+  }
+
+  const percent = Math.min((stk / vol) * 100, 100);   // Deckel auf 100 %
+  const color   = getStockColor(stk, vol);
+
+  new Chart(el, {
+    type: "doughnut",
+    data: {
+      datasets: [{
+        data: [percent, 100 - percent],
+        backgroundColor: [color, "#333"],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      animation: false,               // sofort zeichnen => weniger Timing-Issues
+      cutout: "70%",
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false }
+      }
+    }
+  });
+}
+
 /**
  * Render-Logik je Karte:
  * - Philipp darf beide Karten editieren; Andreas nur seine
@@ -983,6 +1072,13 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
       <p><strong>Notizen:</strong><br>${notes ? escapeHtml(notes) : '-'}</p>
       <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
       <p><strong>Bestand:</strong> ${stock ?? '-'} ml</p>
+	  
+		<div class="donut-wrap">
+		  <canvas id="donut_${prefix}" width="120" height="120"></canvas>
+		  <div class="donut-label">${stock ? Math.round(stock) : 0} ml</div>
+		</div>
+
+	  
     `;
   } else {
     // Sterne erst nach Einfügen ins DOM koppeln
