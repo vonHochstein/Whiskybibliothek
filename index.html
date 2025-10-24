@@ -23,7 +23,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
-  <li><strong>24.10.2025 16:11 Uhr:</strong> Indien als Whisky Land ergänzt.</li>
+  <li><strong>24.10.2025 16:11 Uhr:</strong> Indien ubd Schweiz als Whisky Länder ergänzt.</li>
 	<li><strong>24.10.2025 12:54 Uhr:</strong> Erweiterung der Detailansicht um individuellen <em>Tasting-Block</em> (Felder: Farbe, Geruch, Geschmack, Abgang, Gesamteindruck). Anpassung der Speichern- und Darstellungslogik inkl. einheitlichem Zeilenumbruch.</li>
 	<li><strong>24.10.2025 11:47 Uhr:</strong> Integration Bestandsanzeige in der Listenansicht (farbige Punkte) sowie Detailansicht (Diagramme).</li>
     <li><strong>24.10.2025 10:30 Uhr:</strong> Umstellung Bestände von % auf ml Werte.</li>
@@ -662,7 +662,8 @@ async function renderDetailView(w, id, user, editing) {
 					  <option value="Japan">Japan</option>
 					  <option value="Australien">Australien</option>
 					  <option value="Kanada">Kanada</option>,
-            <option value="Indien">Indien</option>
+            <option value="Indien">Indien</option>,
+            <option value="Schweiz">Schweiz</option>
 					</select><br>
 
 					<input id="region" type="text" value="${w.region || ""}" placeholder="Region (z. B. Highlands, Sachsen …)"><br>
@@ -915,7 +916,8 @@ setTimeout(() => {
         "Japan":       "Flag_of_Japan.svg",
         "Australien":  "Flag_of_Australia.svg",
         "Kanada":      "Flag_of_Canada_(Pantone).svg",
-        "Indien":      "Flag_of_India.svg"
+        "Indien":      "Flag_of_India.svg",
+        "Schweiz":      "Flag_of_Switzerland.svg"
       };
 
       // vorhandene Werte übernehmen
