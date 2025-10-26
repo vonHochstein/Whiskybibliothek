@@ -111,7 +111,7 @@
   <div class="row" style="justify-content:space-between;align-items:center">
     <div>Angemeldet als <strong id="user"></strong></div>
     <div class="row" style="gap:6px">
-      <button id="musicToggle" class="music-btn"><span class="icon">🎵</span>Tastingmusik</button>
+      <button id="musicToggle" class="music-btn"><span class="icon">🎵</span> Tastingmusik</button>
       <button id="themeToggle" title="Hell/Dunkel">🌙</button>
       <button id="viewToggle" title="Ansicht wechseln">🧱</button>
       <button id="logout">Abmelden</button>
@@ -1287,18 +1287,18 @@ let muted = true;
 btn.addEventListener("click", () => {
   if (!playing) {
     frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1`;
-    btn.innerHTML = `<span class="icon eq"></span> 🔇 Entmuten`;
+    btn.innerHTML = `<span class="icon eq"></span> 🔇 Stumm`;
     playing = true;
     muted = true;
   } else if (muted) {
     // entmuten
     frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=0`;
-    btn.innerHTML = `<span class="icon eq"></span> ⏸️ Musik pausieren`;
+    btn.innerHTML = `<span class="icon eq"></span> ⏸️ Pause`;
     muted = false;
   } else {
     // stoppen
     frame.src = "";
-    btn.innerHTML = `<span class="icon">🎵</span> Musik abspielen`;
+    btn.innerHTML = `<span class="icon">▶️ Abspielen</span>`;
     playing = false;
     muted = true;
   }
