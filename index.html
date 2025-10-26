@@ -23,6 +23,7 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+    <li><strong>26.10.2025 15:32 Uhr:</strong> Integration <em>„Fasstyp“</em>. Anpassung der Editier- und Speicherlogik in <code>renderDetailView()</code> und <code>collectUpdates()</code>. Listenansicht bleibt unverändert.</li>
     <li><strong>26.10.2025 13:45 Uhr:</strong> Optische Anpassungen in Listen- und Detailansicht (Bildgrößen, Rasterausrichtung).</li>
     <hr class="changelog-divider">
     <li><strong>24.10.2025 16:11 Uhr:</strong> Indien ubd Schweiz als Whisky Länder ergänzt.</li>
@@ -126,7 +127,7 @@
   <!-- Zähler + Suche + Sortierung -->
   <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
 
-  <div class="card search-sort" style="margin:8px 0; display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center">
+  <div class="card search-sort" style="margin:8px 0; display:grid; grid-template-columns: 1fr auto auto;; gap:8px; align-items:center">
     <input id="searchInput" type="text" placeholder="Suchen …"
            style="display:block;width:100%;max-width:calc(100% - 2px);box-sizing:border-box;
                   padding:8px 10px;border:1px solid var(--border);border-radius:8px;
@@ -145,6 +146,11 @@
 		<option value="pli_philipp_desc">PLI Philipp (hoch → niedrig)</option>
       </select>
     </div>
+        
+    <label id="bothStockFilter" class="filter-checkbox">
+      <input type="checkbox" id="filterBothStock">
+      <span>Beide mit Bestand</span>
+    </label>
   </div>
 
   <div id="content"></div>
@@ -236,6 +242,11 @@ document.getElementById("showAdd").onclick=showAddForm;
 document.getElementById("sortSelect").onchange=()=>renderList(getFilteredList());
 document.getElementById("searchInput").oninput=()=>renderList(getFilteredList());
 
+// ---------- Filter: Beide mit Bestand ----------
+document.getElementById("filterBothStock").addEventListener("change", () => {
+  renderList(getFilteredList());
+});
+
 async function showList(){
   const content = document.getElementById("content");
   content.classList.remove("grid", "list", "listview");
@@ -259,6 +270,15 @@ function getFilteredList(){
   let list = (window.allwhiskys||[]).filter(w =>
     !q || Object.values(w).some(val => val && val.toString().toLowerCase().includes(q))
   );
+
+  // 💛 Filter "Beide mit Bestand"
+  const bothStockChecked = document.getElementById("filterBothStock")?.checked;
+  if (bothStockChecked) {
+    list = list.filter(w =>
+      Number(w.stock_philipp) > 0 && Number(w.stock_andreas) > 0
+    );
+  }
+
   return applySort(list);
 }
 
@@ -673,6 +693,7 @@ async function renderDetailView(w, id, user, editing) {
 					<input id="region_flag_url" type="url" value="${w.region_flag_url || ""}" placeholder="Region-Flaggen-URL (automatisch gesetzt)"><br>
                  <input id="age_years" type="number" value="${w.age_years || ""}" placeholder="Alter (Jahre)"><br>
                  <input id="volume_ml" type="number" value="${w.volume_ml || ""}" placeholder="Volumen (ml)"><br>
+                 <input id="fasstyp" type="text" value="${w.fasstyp || ''}" placeholder="Fasstyp"><br>
                  <input id="price_eur" type="number" step="0.01" value="${w.price_eur || ""}" placeholder="Preis (€)"><br>
                  <input id="abv" type="number" step="0.1" value="${w.abv || ""}" placeholder="% vol."><br>
                  <p><strong>Bild ändern / hinzufügen:</strong></p>
@@ -688,6 +709,7 @@ async function renderDetailView(w, id, user, editing) {
 					  ${w.country || ""}${w.region ? " – " + w.region : ""}
 					</p>
                  <p>${w.age_years || "-"} Jahre | ${w.volume_ml || "-"} ml | ${w.abv || "-"} % vol</p>
+                 <p>Fasstyp: ${w.fasstyp || '-'}</p>
                  <p>Preis: ${w.price_eur != null ? Number(w.price_eur).toFixed(2) + " €" : "-"} ${w.price_per_liter_eur != null ? "(" + Number(w.price_per_liter_eur).toFixed(2) + " €/L)" : ""}</p>
                  <p><strong>Gesamtwertung:</strong> ${renderStars(ratingAvg(w))} (${ratingAvg(w) ? Math.round(ratingAvg(w))+'/10' : '-'})</p>`}
 
@@ -1145,7 +1167,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 function collectUpdates(w, user, editing){
   const upd = {};
   // alle relevanten Felder einsammeln (inkl. neue)
-  ["name","distillery","country","region","flag_url","region_flag_url","age_years","volume_ml","price_eur","abv"].forEach(f=>{
+  ["name","distillery","country","fasstyp","region","flag_url","region_flag_url","age_years","volume_ml","price_eur","abv"].forEach(f=>{
     const el = document.getElementById(f);
     if (el) {
       upd[f] = el.value === "" ? null : (isNaN(el.value) ? el.value : parseFloat(el.value));
