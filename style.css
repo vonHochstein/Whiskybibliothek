@@ -214,16 +214,19 @@
 
   #content.list .card + .card { margin-top:10px; }
   
-  /*Trennlinien*/
-  .changelog-divider {
-  height: 1px;
+/* Trennlinien */
+.changelog-divider {
+  display: block;
+  border: none;                   /* keine Standardlinie */
+  height: 1px;                    /* nur eine, exakt 1px hoch */
   margin: 18px 0;
-  border: none;
   background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
   opacity: 0.8;
   border-radius: 1px;
-  }
-  
+  box-shadow: none;               /* verhindert Browser-Glättungseffekt */
+  outline: none;                  /* Safari/Chrome-Fix gegen Doppelkante */
+}
+
   /* ---------- Einheitliche Eingabefelder in Karten ---------- */
 .card input[type="text"],
 .card input[type="number"],
@@ -484,3 +487,4 @@ h5 {
   background: #d4af37;
   color: #1b1b1b;
 }
+
