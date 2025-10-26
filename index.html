@@ -1208,45 +1208,53 @@ function collectUpdates(w, user, editing){
 	  t_summary : textVal(`${who}_t_summary`)
 	});
 
-  if (user === "Philipp") {
-    const p = readCard("philipp");
-    const a = readCard("andreas");
-    if (p.rating !== undefined)  upd.rating_philipp = p.rating;
-    if (p.notes  !== undefined)  upd.notes_philipp  = p.notes;
-    if (p.wish   !== undefined)  upd.wishlist_philipp = p.wish;
-    if (p.stock  !== undefined)  upd.stock_philipp  = p.stock;
+if (user === "Philipp") {
+  const p = readCard("philipp");
+  const a = readCard("andreas");
 
-    if (a.rating !== undefined)  upd.rating_andreas = a.rating;
-    if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
-    if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
-    if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
-	
-	if (p.t_color   !== undefined) upd.t_color_philipp   = p.t_color;
-    if (p.t_nose    !== undefined) upd.t_nose_philipp    = p.t_nose;
-    if (p.t_palate  !== undefined) upd.t_palate_philipp  = p.t_palate;
-    if (p.t_finish  !== undefined) upd.t_finish_philipp  = p.t_finish;
-    if (p.t_summary !== undefined) upd.t_summary_philipp = p.t_summary;
+  if (p.rating !== undefined)  upd.rating_philipp = p.rating;
+  if (p.notes  !== undefined)  upd.notes_philipp  = p.notes;
+  if (p.wish   !== undefined)  upd.wishlist_philipp = p.wish;
+  if (p.stock  !== undefined)  upd.stock_philipp  = p.stock;
 
-    if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
-    if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
-    if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
-    if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
-    if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+  if (a.rating !== undefined)  upd.rating_andreas = a.rating;
+  if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
+  if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
+  if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+  
+  if (p.t_color   !== undefined) upd.t_color_philipp   = p.t_color;
+  if (p.t_nose    !== undefined) upd.t_nose_philipp    = p.t_nose;
+  if (p.t_palate  !== undefined) upd.t_palate_philipp  = p.t_palate;
+  if (p.t_finish  !== undefined) upd.t_finish_philipp  = p.t_finish;
+  if (p.t_summary !== undefined) upd.t_summary_philipp = p.t_summary;
 
-  } else if (user === "Andreas") {
-    const a = readCard("andreas");
-    if (a.rating !== undefined)  upd.rating_andreas = a.rating;
-    if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
-    if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
-    if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
-	
-	if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
-    if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
-    if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
-    if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
-    if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+  if (p.t_trinkgelegenheit !== undefined) upd.t_trinkgelegenheit_philipp = p.t_trinkgelegenheit;
 
-  }
+  if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
+  if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
+  if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
+  if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
+  if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+
+  if (a.t_trinkgelegenheit !== undefined) upd.t_trinkgelegenheit_andreas = a.t_trinkgelegenheit;
+
+} else if (user === "Andreas") {
+  const a = readCard("andreas");
+
+  if (a.rating !== undefined)  upd.rating_andreas = a.rating;
+  if (a.notes  !== undefined)  upd.notes_andreas  = a.notes;
+  if (a.wish   !== undefined)  upd.wishlist_andreas = a.wish;
+  if (a.stock  !== undefined)  upd.stock_andreas  = a.stock;
+  
+  if (a.t_color   !== undefined) upd.t_color_andreas   = a.t_color;
+  if (a.t_nose    !== undefined) upd.t_nose_andreas    = a.t_nose;
+  if (a.t_palate  !== undefined) upd.t_palate_andreas  = a.t_palate;
+  if (a.t_finish  !== undefined) upd.t_finish_andreas  = a.t_finish;
+  if (a.t_summary !== undefined) upd.t_summary_andreas = a.t_summary;
+
+  if (a.t_trinkgelegenheit !== undefined) upd.t_trinkgelegenheit_andreas = a.t_trinkgelegenheit;
+}
+
   return upd;
 }
 
