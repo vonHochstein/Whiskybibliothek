@@ -1265,29 +1265,26 @@ document.addEventListener("input", (e) => {
 });
 
 // ---------- Tasting-Musik ----------
-const musicBtn = document.getElementById("musicToggle");
+const musicBtn = document.getElementById('musicToggle');
 let musicPlaying = false;
-
-// Erstelle YouTube-Iframe einmalig
-const ytFrame = document.createElement("iframe");
-ytFrame.width = 0;
-ytFrame.height = 0;
-ytFrame.style.border = "none";
-ytFrame.allow = "autoplay";
-ytFrame.style.display = "none"; // unsichtbar
+const ytFrame = document.createElement('iframe');
+ytFrame.width = 400;
+ytFrame.height = 400;
+ytFrame.style.border = 'none';
+ytFrame.allow = 'autoplay';
 document.body.appendChild(ytFrame);
 
-// Klick-Logik
-musicBtn.addEventListener("click", () => {
+// YouTube-Playlist-ID (hier kannst du deine ändern)
+const playlistId = 'aBAOwkURZus';
+
+musicBtn.addEventListener('click', () => {
   if (!musicPlaying) {
-    // Autoplay funktioniert nur bei Klick + mute
-    ytFrame.src = "https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1";
-    musicBtn.textContent = "⏸️ Musik pausieren";
+    ytFrame.src = `https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1`;
+    musicBtn.textContent = '⏸';
     musicPlaying = true;
   } else {
-    // Stop durch Leeren des SRC
-    ytFrame.src = "";
-    musicBtn.textContent = "🎵 Musik abspielen";
+    ytFrame.src = '';
+    musicBtn.textContent = '🎵';
     musicPlaying = false;
   }
 });
