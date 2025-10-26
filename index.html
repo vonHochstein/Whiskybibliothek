@@ -1199,13 +1199,15 @@ function collectUpdates(w, user, editing){
 	  notes  : textVal(`${who}_notes`),
 	  wish   : boolVal(`${who}_wishlist`),
 	  stock  : numVal(`${who}_stock`),
-
+	
 	  // 🥃 Tasting-Felder
 	  t_color   : textVal(`${who}_t_color`),
 	  t_nose    : textVal(`${who}_t_nose`),
 	  t_palate  : textVal(`${who}_t_palate`),
 	  t_finish  : textVal(`${who}_t_finish`),
-	  t_summary : textVal(`${who}_t_summary`)
+	  t_summary : textVal(`${who}_t_summary`),
+	  // ➕ NEU:
+	  t_trinkgelegenheit : textVal(`${who}_t_trinkgelegenheit`)
 	});
 
 if (user === "Philipp") {
