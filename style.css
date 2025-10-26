@@ -121,13 +121,6 @@
     text-shadow: 0 1px 1px rgba(0,0,0,.2);
   }
 
-
-  .block-divider {
-    border: none !important;
-    border-top: 1px solid rgba(212, 175, 55, 0.5) !important; /* Gold Edition, etwas kräftiger */
-    margin: 10px 0 !important;
-  }
-
   /* Gleichmäßige Struktur und optische Abhebung */
   .personal p {
     border-bottom: none;
@@ -215,16 +208,24 @@
   #content.list .card + .card { margin-top:10px; }
   
 /* Trennlinien */
-.changelog-divider {
+hr.changelog-divider {
   display: block;
-  border: none;                   /* keine Standardlinie */
-  height: 1px;                    /* nur eine, exakt 1px hoch */
+  border: none;
+  height: 1px;
   margin: 18px 0;
   background: linear-gradient(90deg, #d4af37 0%, #b17828 100%);
   opacity: 0.8;
   border-radius: 1px;
-  box-shadow: none;               /* verhindert Browser-Glättungseffekt */
-  outline: none;                  /* Safari/Chrome-Fix gegen Doppelkante */
+  box-shadow: none;
+  outline: none;
+}
+
+hr.block-divider {
+  border: none;
+  border-top: 1px solid rgba(212, 175, 55, 0.5);
+  margin: 10px 0;
+  background: none;   /* verhindert Mischdarstellung */
+  height: 0;          /* keine zusätzliche Fläche */
 }
 
   /* ---------- Einheitliche Eingabefelder in Karten ---------- */
@@ -487,4 +488,5 @@ h5 {
   background: #d4af37;
   color: #1b1b1b;
 }
+
 
