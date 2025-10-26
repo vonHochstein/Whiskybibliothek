@@ -125,17 +125,8 @@
     <button id="refresh">Aktualisieren</button>
   </div>
 
-	<iframe
-	  id="ytPlayer"
-	  width="0"
-	  height="0"
-	  src=""
-	  title="Whiskey Jazz BGM Music ☕ Chill Out Jazz Music"
-	  frameborder="0"
-	  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-	  referrerpolicy="strict-origin-when-cross-origin"
-	  allowfullscreen
-	></iframe>
+  <!-- Unsichtbarer API-Player -->
+  <div id="player"></div> 
 
   <!-- Zähler + Suche + Sortierung -->
   <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
@@ -1277,29 +1268,45 @@ document.addEventListener("input", (e) => {
 });
 
 // ---------- Tasting-Musik ----------
-const btn = document.getElementById("musicToggle");
-const frame = document.getElementById("ytPlayer");
-const icon = btn.querySelector(".icon");
-
-let playing = false;
+let player;
+let musicPlaying = false;
 let muted = true;
 
+// Diese Funktion ruft YouTube automatisch auf, sobald das API-Script geladen ist
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player('player', {
+    height: '0',
+    width: '0',
+    videoId: 'aBAOwkURZus',
+    playerVars: {
+      'autoplay': 0,
+      'controls': 0,
+      'loop': 1,
+      'playlist': 'aBAOwkURZus' // nötig, damit Loop funktioniert
+    }
+  });
+}
+
+const btn = document.getElementById("musicToggle");
+
 btn.addEventListener("click", () => {
-  if (!playing) {
-    frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1`;
+  if (!musicPlaying) {
+    // Start gemutet
+    player.mute();
+    player.playVideo();
     btn.innerHTML = `<span class="icon eq"></span> 🔇 Stumm`;
-    playing = true;
+    musicPlaying = true;
     muted = true;
   } else if (muted) {
-    // entmuten
-    frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=0`;
+    // Entmuten
+    player.unMute();
     btn.innerHTML = `<span class="icon eq"></span> ⏸️ Pause`;
     muted = false;
   } else {
-    // stoppen
-    frame.src = "";
-    btn.innerHTML = `<span class="icon">▶️ Abspielen</span>`;
-    playing = false;
+    // Stoppen
+    player.stopVideo();
+    btn.innerHTML = `<span class="icon">▶️</span> Play`;
+    musicPlaying = false;
     muted = true;
   }
 });
