@@ -111,6 +111,7 @@
   <div class="row" style="justify-content:space-between;align-items:center">
     <div>Angemeldet als <strong id="user"></strong></div>
     <div class="row" style="gap:6px">
+      <button id="musicToggle" title="Tasting-Musik" class="music-btn">🎵</button>
       <button id="themeToggle" title="Hell/Dunkel">🌙</button>
       <button id="viewToggle" title="Ansicht wechseln">🧱</button>
       <button id="logout">Abmelden</button>
@@ -120,7 +121,7 @@
   <div class="row" style="margin-top:10px">
     <button id="showList">Liste</button>
     <button id="showAdd">Neuer Whisky</button>
-	<button id="showDashboard">Dashboard</button>
+	  <button id="showDashboard">Dashboard</button>
     <button id="refresh">Aktualisieren</button>
   </div>
 
@@ -1260,6 +1261,34 @@ document.addEventListener("input", (e) => {
   if (e.target.tagName.toLowerCase() === "textarea") {
     e.target.style.height = "auto";
     e.target.style.height = (e.target.scrollHeight) + "px";
+  }
+});
+
+// ---------- Tasting-Musik ----------
+const musicBtn = document.getElementById("musicToggle");
+let musicPlaying = false;
+
+// Erstelle YouTube-Iframe einmalig
+const ytFrame = document.createElement("iframe");
+ytFrame.width = 0;
+ytFrame.height = 0;
+ytFrame.style.border = "none";
+ytFrame.allow = "autoplay";
+ytFrame.style.display = "none"; // unsichtbar
+document.body.appendChild(ytFrame);
+
+// Klick-Logik
+musicBtn.addEventListener("click", () => {
+  if (!musicPlaying) {
+    // Autoplay funktioniert nur bei Klick + mute
+    ytFrame.src = "https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1";
+    musicBtn.textContent = "⏸️ Musik pausieren";
+    musicPlaying = true;
+  } else {
+    // Stop durch Leeren des SRC
+    ytFrame.src = "";
+    musicBtn.textContent = "🎵 Musik abspielen";
+    musicPlaying = false;
   }
 });
 
