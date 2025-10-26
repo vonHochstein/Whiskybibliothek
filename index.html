@@ -1122,6 +1122,7 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 	  <p><strong>Geschmack:</strong><br>${escapeHtml(w[`t_palate_${prefix}`]) || '-'}</p>
 	  <p><strong>Abgang:</strong><br>${escapeHtml(w[`t_finish_${prefix}`]) || '-'}</p>
 	  <p><strong>Gesamteindruck:</strong><br>${escapeHtml(w[`t_summary_${prefix}`]) || '-'}</p>
+	  <p><strong>Trinkgelegenheit:</strong><br>${escapeHtml(w[`t_trinkgelegenheit_${prefix}`]) || '-'}</p>
 	  <hr class="block-divider">
       <p><strong>Kaufwunsch:</strong> ${wish ? '☑' : '☐'}</p>
       <p><strong>Bestand:</strong> ${stock ?? '-'} ml</p>
@@ -1166,6 +1167,10 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
       <p>Gesamteindruck:<br>
         <textarea id="${prefix}_t_summary" rows="3" style="width:100%">${w[`t_summary_${prefix}`] || ''}</textarea>
       </p>
+	  <p>Trinkgelegenheit:<br>
+      <textarea id="${prefix}_t_trinkgelegenheit" rows="3" style="width:100%">${w[`t_trinkgelegenheit_${prefix}`] || ''}</textarea>
+      </p>
+	  
 	  <hr class="block-divider">
 	  
       <p><label><input id="${prefix}_wishlist" type="checkbox" ${wish ? "checked" : ""}> Kaufwunsch</label></p>
