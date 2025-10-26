@@ -178,7 +178,7 @@
   /* Dynamisches Raster NUR in der Listenansicht */
   #content.grid.listview {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
     gap: 10px;
     padding: 0px;
     align-items: start;
@@ -419,4 +419,24 @@ h5 {
   margin-top: 8px;
   font-size: 1rem;
   font-weight: 800;
+}
+
+/* ---------- Einheitliche Whisky-Bildgrößen ---------- */
+
+/* Listenansicht */
+.listview img.thumb,
+.list .card:first-of-type img.thumb { /* greift auch beim Detailmodus */
+  max-height: 250px;
+  width: auto;
+  object-fit: contain;
+  margin: 0 auto 10px;
+}
+
+/* Detailansicht */
+#imgPrev {
+  display: block;
+  max-height: 400px;      /* größere Ansicht */
+  width: auto;
+  object-fit: contain;
+  margin: 0 auto 10px;
 }
