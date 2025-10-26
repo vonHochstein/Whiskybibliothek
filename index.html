@@ -111,7 +111,7 @@
   <div class="row" style="justify-content:space-between;align-items:center">
     <div>Angemeldet als <strong id="user"></strong></div>
     <div class="row" style="gap:6px">
-      <button id="musicToggle" title="Tasting-Musik" class="music-btn">🎵</button>
+      <button id="musicToggle" class="music-btn"><span class="icon">🎵</span>Tastingmusik</button>
       <button id="themeToggle" title="Hell/Dunkel">🌙</button>
       <button id="viewToggle" title="Ansicht wechseln">🧱</button>
       <button id="logout">Abmelden</button>
@@ -125,18 +125,17 @@
     <button id="refresh">Aktualisieren</button>
   </div>
 
-  <iframe
-    id="ytPlayer"
-    width="560"
-    height="315"
-    src=""
-    title="Whiskey Jazz BGM Music ☕ Chill Out Jazz Music"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    referrerpolicy="strict-origin-when-cross-origin"
-    allowfullscreen
-    style="display:none;"
-  ></iframe>
+	<iframe
+	  id="ytPlayer"
+	  width="0"
+	  height="0"
+	  src=""
+	  title="Whiskey Jazz BGM Music ☕ Chill Out Jazz Music"
+	  frameborder="0"
+	  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+	  referrerpolicy="strict-origin-when-cross-origin"
+	  allowfullscreen
+	></iframe>
 
   <!-- Zähler + Suche + Sortierung -->
   <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
@@ -1280,19 +1279,28 @@ document.addEventListener("input", (e) => {
 // ---------- Tasting-Musik ----------
 const btn = document.getElementById("musicToggle");
 const frame = document.getElementById("ytPlayer");
+const icon = btn.querySelector(".icon");
+
 let playing = false;
+let muted = true;
 
 btn.addEventListener("click", () => {
   if (!playing) {
-    frame.src = "https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1";
-    frame.style.display = "block";
-    btn.textContent = "⏸️ Musik pausieren";
+    frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=1`;
+    btn.innerHTML = `<span class="icon eq"></span> 🔇 Entmuten`;
     playing = true;
+    muted = true;
+  } else if (muted) {
+    // entmuten
+    frame.src = `https://www.youtube.com/embed/aBAOwkURZus?autoplay=1&mute=0`;
+    btn.innerHTML = `<span class="icon eq"></span> ⏸️ Musik pausieren`;
+    muted = false;
   } else {
+    // stoppen
     frame.src = "";
-    frame.style.display = "none";
-    btn.textContent = "🎵 Musik abspielen";
+    btn.innerHTML = `<span class="icon">🎵</span> Musik abspielen`;
     playing = false;
+    muted = true;
   }
 });
 
