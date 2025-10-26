@@ -125,12 +125,6 @@
     <button id="refresh">Aktualisieren</button>
   </div>
 
-  <!-- Unsichtbarer API-Player -->
-  <div id="player"></div> 
-
-  <!-- YouTube IFrame API laden -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-
   <!-- Zähler + Suche + Sortierung -->
   <p id="whiskyCount" class="muted" style="margin-top:6px"></p>
 
@@ -160,6 +154,19 @@
     </label>
   </div>
 
+	  	<div id="musicFrame" style="display:none; margin-top:10px;">
+		  <iframe
+		    width="560"
+		    height="315"
+		    src="https://www.youtube.com/embed/aBAOwkURZus"
+		    title="Whiskey Jazz BGM Music ☕ Chill Out Jazz Music"
+		    frameborder="0"
+		    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+		    allowfullscreen
+		    style="border-radius:8px; max-width:100%;"
+		  ></iframe>
+		</div>
+	
   <div id="content"></div>
 </div>
 
@@ -1271,53 +1278,14 @@ document.addEventListener("input", (e) => {
 });
 
 // ---------- Tasting-Musik ----------
-let player;
-let musicPlaying = false;
-let muted = true;
-
-// Diese Funktion ruft YouTube automatisch auf, sobald das API-Script geladen ist
-function onYouTubeIframeAPIReady() {
-  player = new YT.Player('player', {
-    height: '0',
-    width: '0',
-    videoId: 'aBAOwkURZus',
-    playerVars: {
-      'autoplay': 0,
-      'controls': 0,
-      'loop': 1,
-      'playlist': 'aBAOwkURZus' // nötig, damit Loop funktioniert
-    }
-  });
-}
-
 const btn = document.getElementById("musicToggle");
+const frame = document.getElementById("musicFrame");
+let visible = false;
 
 btn.addEventListener("click", () => {
-  // Sicherheitsabfrage: Player schon bereit?
-  if (!player || typeof player.playVideo !== "function") {
-    console.warn("YouTube-Player ist noch nicht bereit. Bitte kurz warten …");
-    return;
-  }
-
-  if (!musicPlaying) {
-    // Start gemutet
-    player.mute();
-    player.playVideo();
-    btn.innerHTML = `<span class="icon eq"></span> 🔇 Stumm`;
-    musicPlaying = true;
-    muted = true;
-  } else if (muted) {
-    // Entmuten
-    player.unMute();
-    btn.innerHTML = `<span class="icon eq"></span> ⏸️ Pause`;
-    muted = false;
-  } else {
-    // Stoppen
-    player.stopVideo();
-    btn.innerHTML = `<span class="icon">▶️</span> Play`;
-    musicPlaying = false;
-    muted = true;
-  }
+  visible = !visible;
+  frame.style.display = visible ? "block" : "none";
+  btn.textContent = visible ? "⏸️ Musik ausblenden" : "▶️ Musik einblenden";
 });
 
 </script>
