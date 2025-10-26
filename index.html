@@ -111,7 +111,7 @@
   <div class="row" style="justify-content:space-between;align-items:center">
     <div>Angemeldet als <strong id="user"></strong></div>
     <div class="row" style="gap:6px">
-      <button id="musicToggle" class="music-btn"><span class="icon">🎵</span> Tastingmusik</button>
+      <button id="musicToggle" class="music-btn"><span class="icon">🎵</span></button>
       <button id="themeToggle" title="Hell/Dunkel">🌙</button>
       <button id="viewToggle" title="Ansicht wechseln">🧱</button>
       <button id="logout">Abmelden</button>
@@ -1285,7 +1285,7 @@ let visible = false;
 btn.addEventListener("click", () => {
   visible = !visible;
   frame.style.display = visible ? "block" : "none";
-  btn.textContent = visible ? "⏸️ Musik ausblenden" : "▶️ Musik einblenden";
+  btn.textContent = visible ? "🎵" : "🎵";
 });
 
 </script>
