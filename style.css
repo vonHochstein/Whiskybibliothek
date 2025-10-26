@@ -472,21 +472,3 @@ h5 {
 .filter-checkbox span {
   white-space: nowrap;
 }
-
-/* ---------- Tasting Musik ---------- */
-.music-btn {
-  background: none;
-  border: 1px solid #d4af37;
-  color: #d4af37;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.music-btn:hover {
-  background: #d4af37;
-  color: #1b1b1b;
-}
-
-
