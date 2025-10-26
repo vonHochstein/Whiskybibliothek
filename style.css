@@ -468,3 +468,59 @@ h5 {
 .filter-checkbox span {
   white-space: nowrap;
 }
+
+/* ---------- Tasting Musik ---------- */
+.music-btn {
+  background: none;
+  border: 1px solid #d4af37;
+  color: #d4af37;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+.music-btn:hover {
+  background: #d4af37;
+  color: #1b1b1b;
+}
+
+/* Equalizer-Animation */
+.icon.eq {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  position: relative;
+}
+.icon.eq::before,
+.icon.eq::after,
+.icon.eq span {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  background: #d4af37;
+  animation: bounce 0.6s infinite ease-in-out;
+}
+.icon.eq::before {
+  left: 0;
+  height: 4px;
+  animation-delay: 0s;
+}
+.icon.eq span {
+  left: 4px;
+  height: 8px;
+  animation-delay: 0.2s;
+}
+.icon.eq::after {
+  left: 8px;
+  height: 6px;
+  animation-delay: 0.4s;
+}
+@keyframes bounce {
+  0%, 100% { height: 4px; }
+  50% { height: 10px; }
+}
