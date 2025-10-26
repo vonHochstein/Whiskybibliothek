@@ -1293,6 +1293,12 @@ function onYouTubeIframeAPIReady() {
 const btn = document.getElementById("musicToggle");
 
 btn.addEventListener("click", () => {
+  // Sicherheitsabfrage: Player schon bereit?
+  if (!player || typeof player.playVideo !== "function") {
+    console.warn("YouTube-Player ist noch nicht bereit. Bitte kurz warten …");
+    return;
+  }
+
   if (!musicPlaying) {
     // Start gemutet
     player.mute();
@@ -1313,6 +1319,7 @@ btn.addEventListener("click", () => {
     muted = true;
   }
 });
+
 
 </script>
 </html>
