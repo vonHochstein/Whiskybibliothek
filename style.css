@@ -496,3 +496,20 @@ h5 {
   white-space: nowrap;
 }
 
+/* ---------- YouTube-Videoreihe ---------- */
+.video-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;             /* Abstand zwischen den Videos */
+  flex-wrap: wrap;       /* bricht sauber um auf kleinen Bildschirmen */
+}
+
+.video-row iframe {
+  width: 560px;
+  height: 315px;
+  max-width: 100%;
+  border-radius: 8px;
+  flex: 1 1 45%;         /* beide teilen sich gleichmäßig den Platz */
+}
+
