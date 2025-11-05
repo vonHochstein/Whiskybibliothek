@@ -23,6 +23,9 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
+	<li><strong>05.11.2025 16:28 Uhr:</strong> Feld „Abfüller“ ergänzt. Neues Eingabefeld im Bearbeitungsmodus sowie Darstellung in allen Ansichten (Detail- und Listenansicht).</li>
+    <li><strong>05.11.2025 15:45 Uhr:</strong> Markierung für Sammlerflaschen integriert. Neue Checkbox („Sammlerflasche“) und goldener Schimmer in der Listenansicht. Rot-Markierung (vorläufig) hat Vorrang vor Gold.</li>
+    </ul> <hr class="changelog-divider"> <ul>
     <li><strong>30.10.2025 21:48 Uhr:</strong> Markierung für vorläufige Whiskyeinträge integriert. Neue Checkbox im Bearbeitungsmodus („Vorläufiger Eintrag – muss noch überprüft werden“) und optische Hervorhebung dieser Einträge in der Listenansicht durch flächendeckenden rot-goldenen Schimmer.</li>
     </ul> <hr class="changelog-divider"> <ul>
     <li><strong>26.10.2025 19:18 Uhr:</strong> Tasting-Musik integriert. Einbettung eines YouTube-Players (Whiskey Jazz BGM) mit Umschalt-Button zum Ein-/Ausblenden.</li>
@@ -469,7 +472,10 @@ function renderList(list){
     const p = w.rating_philipp;
     const avg = ratingAvg(w);
     return `
-    <div class="card ${w.provisional ? 'provisional' : ''}">
+	<div class="card ${
+	  w.provisional ? 'provisional' :
+	  w.collector ? 'collector' : ''
+	}">
       <div class="row">
         <div style="flex:0 0 120px; text-align:center;">
 		  <img loading="lazy"
@@ -487,9 +493,19 @@ function renderList(list){
 			  A
 			</span>
 		  </div>
+			${w.collector ? `
+			  <div class="collector-badge" title="Sammlerflasche">
+				<img src="img/collectors_badge_small.png" alt="Sammlerflasche" class="collector-img">
+			  </div>
+			` : ''}
+
 		</div>
         <div style="flex:1">
-          <strong>${w.name||''}</strong> ${w.distillery?("– "+w.distillery):""}<br>
+          <strong>${w.name||''}</strong> 
+			${w.distillery ? `<br>${w.distillery}` : ''}
+			${w.distillery && w.bottler ? ' • ' : ''}
+			${!w.distillery && w.bottler ? `<br>` : ''}
+			${w.bottler || ''}<br>		  
 			<span class="muted">
 			  ${w.flag_url ? `<img src="${w.flag_url}" alt="${w.country||''}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ''}
 			  ${w.region && w.region_flag_url ? `<img src="${w.region_flag_url}" alt="${w.region}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ''}
@@ -698,6 +714,7 @@ async function renderDetailView(w, id, user, editing) {
             ${editing
               ? `<input id="name" type="text" value="${w.name || ""}" placeholder="Whisky"><br>
                  <input id="distillery" type="text" value="${w.distillery || ""}" placeholder="Brennerei"><br>
+				 <input id="bottler" type="text" value="${w.bottler || ''}" placeholder="Abfüller (z. B. Signatory, Maltman)"><br>
 					<select id="country" placeholder="Land wählen..." style="margin-bottom:4px;">
 					  <option value="">Land wählen …</option>
 					  <option value="Deutschland">Deutschland</option>
@@ -708,8 +725,9 @@ async function renderDetailView(w, id, user, editing) {
 					  <option value="Japan">Japan</option>
 					  <option value="Australien">Australien</option>
 					  <option value="Kanada">Kanada</option>,
-            <option value="Indien">Indien</option>,
-            <option value="Schweiz">Schweiz</option>
+					  <option value="Indien">Indien</option>,
+					  <option value="Schweiz">Schweiz</option>
+					  <option value="Taiwan">Taiwan</option>
 					</select><br>
 
 					<input id="region" type="text" value="${w.region || ""}" placeholder="Region (z. B. Highlands, Sachsen …)"><br>
@@ -727,6 +745,13 @@ async function renderDetailView(w, id, user, editing) {
 					 Vorläufiger Eintrag – muss noch überprüft werden
 				   </label>
 				 </p>
+				 
+				 <p>
+				  <label>
+					<input type="checkbox" id="collector" ${w.collector ? "checked" : ""}>
+					Sammlerflasche
+				  </label>
+				</p>
 
                  <p><strong>Bild ändern / hinzufügen:</strong></p>
                  <input type="file" id="imgUpload" accept="image/*">
@@ -735,7 +760,9 @@ async function renderDetailView(w, id, user, editing) {
               : `<h3>${escapeHtml(w.name)}</h3>
 					<p class="muted">
 					  ${w.distillery || ""}
-					  ${w.country || w.region ? " • " : ""}
+				 	  ${w.distillery && w.bottler ? " • " : ""}
+				  	  ${w.bottler || ""}
+					  ${w.country || w.region ? "" : ""}
 					  ${w.flag_url ? `<img src="${w.flag_url}" alt="${w.country||''}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ""}
 					  ${w.region && w.region_flag_url ? `<img src="${w.region_flag_url}" alt="${w.region}" style="height:1em;vertical-align:middle;margin-right:3px;">` : ""}
 					  ${w.country || ""}${w.region ? " – " + w.region : ""}
@@ -973,7 +1000,8 @@ setTimeout(() => {
         "Australien":  "Flag_of_Australia.svg",
         "Kanada":      "Flag_of_Canada_(Pantone).svg",
         "Indien":      "Flag_of_India.svg",
-        "Schweiz":      "Flag_of_Switzerland.svg"
+        "Schweiz":      "Flag_of_Switzerland.svg",
+		"Taiwan":      "Flag_of_Taiwan.svg"
       };
 
       // vorhandene Werte übernehmen
@@ -1204,7 +1232,8 @@ function renderUserBlock(prefix, user, w, editing, ownerName){
 function collectUpdates(w, user, editing){
   const upd = {};
   // alle relevanten Felder einsammeln
-  ["name","distillery","country","fasstyp","region","flag_url","region_flag_url","age_years","volume_ml","price_eur","abv"].forEach(f=>{
+  ["name","distillery","bottler","country","fasstyp","region","flag_url","region_flag_url","age_years","volume_ml","price_eur","abv"].forEach(f=>{
+
     const el = document.getElementById(f);
     if (el) {
       upd[f] = el.value === "" ? null : (isNaN(el.value) ? el.value : parseFloat(el.value));
@@ -1215,6 +1244,12 @@ function collectUpdates(w, user, editing){
 const provEl = document.getElementById("provisional");
 if (provEl !== null) {
   upd.provisional = !!provEl.checked;
+}
+
+// ---------- Sammlerflasche (Checkbox) ----------
+const collEl = document.getElementById("collector");
+if (collEl !== null) {
+  upd.collector = !!collEl.checked;
 }
 
 	const readCard = (who) => ({
