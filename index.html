@@ -23,7 +23,8 @@
 <div id="changelog" class="card" style="margin-bottom:20px">
   <h3>Changelog</h3>
   <ul>
-	<li><strong>07.12.2025 22:55 Uhr:</strong> Kritischen Fehler beim Login behoben. Der jsDelivr-Import von <code>@supabase/supabase-js</code> verursachte seit heute einen Ladefehler („AuthClient null“), wodurch die gesamte WebApp nicht mehr startete. Der Import wurde auf <code>https://esm.sh/@supabase/supabase-js@2</code> umgestellt. Login und Datenbankzugriff funktionieren wieder einwandfrei.</li>
+	<li><strong>18.12.2025 16:45 Uhr:</strong> Finnland als Whisky Land ergänzt.</li>
+    <li><strong>07.12.2025 22:55 Uhr:</strong> Kritischen Fehler beim Login behoben. Der jsDelivr-Import von <code>@supabase/supabase-js</code> verursachte seit heute einen Ladefehler („AuthClient null“), wodurch die gesamte WebApp nicht mehr startete. Der Import wurde auf <code>https://esm.sh/@supabase/supabase-js@2</code> umgestellt. Login und Datenbankzugriff funktionieren wieder einwandfrei.</li>
 	</ul> <hr class="changelog-divider"> <ul>  
 	<li><strong>05.11.2025 16:45 Uhr:</strong> Taiwan als Whisky Land ergänzt.</li>
 	<li><strong>05.11.2025 16:28 Uhr:</strong> Feld „Abfüller“ ergänzt. Neues Eingabefeld im Bearbeitungsmodus sowie Darstellung in allen Ansichten (Detail- und Listenansicht).</li>
@@ -731,6 +732,7 @@ async function renderDetailView(w, id, user, editing) {
 					  <option value="Indien">Indien</option>,
 					  <option value="Schweiz">Schweiz</option>
 					  <option value="Taiwan">Taiwan</option>
+					  <option value="Finnland">Finnland</option>
 					</select><br>
 
 					<input id="region" type="text" value="${w.region || ""}" placeholder="Region (z. B. Highlands, Sachsen …)"><br>
@@ -1003,8 +1005,9 @@ setTimeout(() => {
         "Australien":  "Flag_of_Australia.svg",
         "Kanada":      "Flag_of_Canada_(Pantone).svg",
         "Indien":      "Flag_of_India.svg",
-        "Schweiz":      "Flag_of_Switzerland.svg",
-		"Taiwan":      "Flag_of_Taiwan.svg"
+        "Schweiz":     "Flag_of_Switzerland.svg",
+		"Taiwan":      "Flag_of_Taiwan.svg",
+		"Finnland":    "Flag_of_Finland.svg" 
       };
 
       // vorhandene Werte übernehmen
